@@ -1,0 +1,22 @@
+# Findings gitleaks reports in upstream Sure's history, all reviewed as false positives:
+# test fixtures and docs with placeholder keys, a recorded VCR cassette, and PostHog's
+# public project key. Each line is commit:file:rule:line and holds no secret.
+# Anything not listed here fails .github/workflows/fork-secrets.yml.
+0cdab9a0bcb7e83a832542fc515129d6b8effdbf:test/models/trade_republic_client_test.rb:generic-api-key:148
+176bb508e4f8434bbf958b094240d08898f380a7:config/locales/views/settings/de.yml:generic-api-key:485
+61ce5c85140a1663050a43d807bd31be2c362e91:test/models/api_key_test.rb:generic-api-key:263
+629bf2aca6300658fccaf0521f2705c197ff1153:test/fixtures/coinspot_items.yml:generic-api-key:4
+735b62d9c776fca4992aea2e1d010f866274907c:test/models/onchain/solana_adapter_test.rb:generic-api-key:7
+9487e6cbfb31dc58ca55eb4d47696d9d1ab0272f:test/controllers/settings/api_keys_controller_test.rb:generic-api-key:39
+a0b1029ba99ab75afc8a3a34b429337d870e49a6:docs/hosting/mcp.md:curl-auth-header:124
+a0b1029ba99ab75afc8a3a34b429337d870e49a6:docs/hosting/mcp.md:curl-auth-header:158
+a0b1029ba99ab75afc8a3a34b429337d870e49a6:docs/hosting/mcp.md:curl-auth-header:175
+a83321c1cf6db7e221bed5d3cfb4e16e4e9d502e:test/models/trade_republic_client_test.rb:generic-api-key:710
+b803ddac961159b58a57164386d23ec92a5fb259:test/controllers/settings/api_keys_controller_test.rb:generic-api-key:36
+b803ddac961159b58a57164386d23ec92a5fb259:test/models/api_key_test.rb:generic-api-key:11
+b803ddac961159b58a57164386d23ec92a5fb259:test/system/settings/api_keys_test.rb:generic-api-key:138
+b803ddac961159b58a57164386d23ec92a5fb259:test/system/settings/api_keys_test.rb:generic-api-key:57
+c6a240a183516f18a78c1fe83d058314f540d7c8:test/fixtures/redbark_items.yml:generic-api-key:5
+e526fac7e0d8a5591d1fc0bc1d275b08fe917e97:config/initializers/posthog.rb:generic-api-key:11
+eebc07d75e74ef58d2c26b66b1e9f77d690e6991:test/vcr_cassettes/git_repository_provider/fetch_latest_release_notes.yml:aws-access-token:190
+eebc07d75e74ef58d2c26b66b1e9f77d690e6991:test/vcr_cassettes/git_repository_provider/fetch_latest_release_notes.yml:jwt:190

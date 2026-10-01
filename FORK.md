@@ -32,6 +32,8 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `lib/fork/boot_checks.rb`     | The boot checks as a pure module, so they can be tested without booting production          |
 | `lib/fork/branding.rb`        | Finds upstream's English "Sure" strings and renders the overrides                           |
 | `lib/tasks/fork.rake`         | `bin/rails fork:locales` regenerates the overrides                                          |
+| `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
+| `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `test/lib/fork/`              | Tests for the above                                                                         |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
@@ -50,6 +52,10 @@ Deliberately still "Sure":
 The authenticator issuer only labels new enrolments. Codes from existing ones still verify, because a TOTP code depends on the secret alone.
 
 `config/initializers/fork.rb` runs after `brand.rb` and `filter_parameter_logging.rb` because initializers load in name order. Renaming it would silently undo the product name default.
+
+### Secrets in a public repository
+
+The repository is public, so CI runs gitleaks over the full history on every push and pull request. Run it locally before pushing with `gitleaks git --redact .`. The 18 entries in `.gitleaksignore` are all from upstream commits: placeholder keys in tests and docs, a recorded cassette, and PostHog's public `phc_` project key. Never add a fork commit to that file; remove the secret, rotate it, and rewrite the unpushed history instead.
 
 ## Production requirements
 
