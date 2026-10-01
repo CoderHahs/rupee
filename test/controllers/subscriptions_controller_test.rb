@@ -27,7 +27,7 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to root_path
-    assert_equal "Welcome to Sure!", flash[:notice]
+    assert_equal "Welcome to Rupee!", flash[:notice]
     assert_equal "trialing", @family.subscription.status
     assert_in_delta Subscription::TRIAL_DAYS.days.from_now, @family.subscription.trial_ends_at, 1.minute
   end
@@ -72,7 +72,7 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     get success_subscription_url(session_id: "test-session-id")
 
     assert @family.subscription.active?
-    assert_equal "Welcome to Sure!  Your contribution is appreciated.", flash[:notice]
+    assert_equal "Welcome to Rupee!  Your contribution is appreciated.", flash[:notice]
   end
 
   test "show action returns forbidden when family has no stripe_customer_id" do

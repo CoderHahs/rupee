@@ -5,6 +5,10 @@ require Rails.root.join("lib/fork/boot_checks").to_s
 Rails.application.configure do
   config.x.product_name = ENV.fetch("PRODUCT_NAME", "Rupee")
 
+  # English strings where upstream names the app "Sure". Later load-path
+  # entries win, so this must stay outside config/locales.
+  config.i18n.load_path += Dir[Rails.root.join("config/fork/locales/*.yml")]
+
   # Plaid Hosted Link URLs open a live Link session for whoever holds them.
   config.filter_parameters += [ :hosted_link_url ]
 

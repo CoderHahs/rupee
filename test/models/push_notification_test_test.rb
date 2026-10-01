@@ -38,8 +38,8 @@ class PushNotificationTestTest < ActiveJob::TestCase
     client = mock
     Apns::Client.expects(:new).with(environment: "sandbox").returns(client)
     client.expects(:deliver_test).with(
-      token: @subscription.token, title: "Sure test notification",
-      body: "This is a test push notification for your Sure account.", request_id: @test.latest[:id]
+      token: @subscription.token, title: "Rupee test notification",
+      body: "This is a test push notification for your Rupee account.", request_id: @test.latest[:id]
     ).returns(stub(ok?: true))
 
     assert_no_difference "Insight.count" do

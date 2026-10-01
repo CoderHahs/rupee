@@ -42,7 +42,7 @@ class _TransactionFormScreenState extends State<TransactionFormScreen> {
     final now = DateTime.now();
     final formattedDate = DateFormat('yyyy/MM/dd').format(now);
     _dateController.text = formattedDate;
-    _nameController.text = 'SureApp';
+    _nameController.text = 'Rupee';
     _fetchCategories();
   }
 

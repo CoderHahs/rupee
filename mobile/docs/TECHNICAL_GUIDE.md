@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-Sure Flutter is a mobile client for the [Sure Finances Management System](https://github.com/we-promise/sure), developed with Flutter framework and supporting both Android and iOS platforms. This application provides core mobile functionality for the Sure Finances management system, allowing users to view and manage their financial accounts anytime, anywhere.
+Rupee's Flutter app is a mobile client for Rupee, a fork of [Sure](https://github.com/we-promise/sure), developed with Flutter framework and supporting both Android and iOS platforms. This application provides core mobile functionality for Rupee, allowing users to view and manage their financial accounts anytime, anywhere.
 
 ### Backend Relationship
 
-This application is a client app for the Sure Finances Management System and requires connection to the Sure backend server (Rails API) to function properly. Backend project: https://github.com/we-promise/sure
+This application is a client app for Rupee and requires connection to the Rupee backend server (Rails API) to function properly. Backend project: https://github.com/CoderHahs/rupee
 
 ## Core Features
 

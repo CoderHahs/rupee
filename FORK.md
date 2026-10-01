@@ -10,20 +10,44 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 
 ### Upstream files the fork edits
 
-| File                                   | Change                                                                                | Upstream candidate |
-| -------------------------------------- | ------------------------------------------------------------------------------------- | ------------------ |
-| `app/models/assistant/configurable.rb` | Both system prompts use `config.x.product_name` instead of the literal "Sure" (R13.5) | Yes                |
-| `app/models/provider/plaid.rb`         | Plaid Link's `client_name` is `config.x.product_name` instead of "Sure Finances"      | Yes                |
+| File                                                       | Change                                                                       | Upstream candidate |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
+| `app/models/assistant/configurable.rb`                     | Both system prompts use `config.x.product_name` instead of "Sure" (R13.5)    | Yes                |
+| `app/models/assistant/function/get_account_statement.rb`   | Tool description says "the app" instead of "Sure"                            | Yes                |
+| `app/models/provider/plaid.rb`                             | Plaid Link's `client_name` is the product name instead of "Sure Finances"    | Yes                |
+| `app/models/user.rb`                                       | The authenticator-app issuer is the product name instead of "Sure Finances"  | Yes                |
+| `app/controllers/concerns/webauthn_relying_party.rb`       | The passkey prompt shows the product name instead of "Sure"                  | Yes                |
+| `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
+| `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
+| `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
+| `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
+| Tests asserting English copy (8 files)                     | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
 
 ### Files the fork adds
 
-| File                          | Purpose                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------ |
-| `config/initializers/fork.rb` | Product name default, log filter addition, production boot checks and host allowlist |
-| `lib/fork/boot_checks.rb`     | The boot checks as a pure module, so they can be tested without booting production   |
-| `test/lib/fork/`              | Tests for the above                                                                  |
-| `FORK.md`                     | This file                                                                            |
-| `.kiro/specs/rupee/`          | Design, requirements and tasks                                                       |
+| File                          | Purpose                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `config/initializers/fork.rb` | Product name default, fork locales, log filter addition, boot checks and host allowlist     |
+| `config/fork/locales/en.yml`  | Generated English overrides for strings where upstream names the app "Sure"                 |
+| `lib/fork/boot_checks.rb`     | The boot checks as a pure module, so they can be tested without booting production          |
+| `lib/fork/branding.rb`        | Finds upstream's English "Sure" strings and renders the overrides                           |
+| `lib/tasks/fork.rake`         | `bin/rails fork:locales` regenerates the overrides                                          |
+| `test/lib/fork/`              | Tests for the above                                                                         |
+| `FORK.md`                     | This file                                                                                   |
+| `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
+
+### Branding
+
+The name is Rupee everywhere a person sees it in English. Rather than edit about 30 upstream locale files, `bin/rails fork:locales` writes an override for each English string that names "Sure" into `config/fork/locales/en.yml`, which loads after `config/locales`. `test/lib/fork/branding_test.rb` fails when the generated file no longer matches upstream, so after each upstream merge run `bin/rails fork:locales` and commit the result. The overrides say "Rupee" literally, so a different `PRODUCT_NAME` also needs them regenerated.
+
+Deliberately still "Sure":
+
+- Strings about Sure's export format and the "Import from Sure" option, because those files really are Sure exports (`Fork::Branding::KEEP_KEYS`).
+- The managed-mode "Contribute and support Sure" page, which is upstream's donation flow.
+- Translations other than English and Swedish. Their fallback is upstream's text.
+- Internal identifiers that are stored or sent elsewhere: provider `User-Agent` headers, the `Sure Mobile` OAuth application record that `mobile_device.rb` looks up by name, the `X-Sure-*` API headers, `Sure.version`, and the mobile app ids (`am.sure.mobile`), which change with the mobile work in design §4.9.
+
+The authenticator issuer only labels new enrolments. Codes from existing ones still verify, because a TOTP code depends on the secret alone.
 
 `config/initializers/fork.rb` runs after `brand.rb` and `filter_parameter_logging.rb` because initializers load in name order. Renaming it would silently undo the product name default.
 
