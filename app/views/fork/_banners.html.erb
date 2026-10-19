@@ -1,0 +1,9 @@
+<%# Rupee's banners above every page's content (design §4.1). %>
+<% if Current.user&.admin? && Current.family && !Current.family.household_settings.timezone_confirmed? %>
+  <div class="mx-auto w-full max-w-2xl mb-4">
+    <%= render DS::Alert.new(variant: :warning, title: t("fork.banners.timezone_title")) do %>
+      <p><%= t("fork.banners.timezone_body", timezone: Current.family.timezone.presence || t("fork.banners.timezone_unset")) %></p>
+      <%= render DS::Link.new(text: t("fork.banners.timezone_action"), href: settings_household_path, variant: :secondary, size: :sm) %>
+    <% end %>
+  </div>
+<% end %>

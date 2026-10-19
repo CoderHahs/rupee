@@ -22,6 +22,12 @@ Rails.application.configure do
   end
 end
 
+# Fork extensions to upstream classes (design §4.1). to_prepare reruns them
+# after each code reload in development.
+Rails.application.config.to_prepare do
+  Family.include(Fork::FamilyExtension)
+end
+
 # Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.
 Sidekiq.configure_server do |config|
   config.on(:startup) do

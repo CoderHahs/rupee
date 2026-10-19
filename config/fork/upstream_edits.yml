@@ -6,12 +6,15 @@ base: 0da863b78971629705d0a5ec5db8998dc97c974c
 
 upstream_edits:
   - app/controllers/concerns/webauthn_relying_party.rb
+  - app/helpers/settings_helper.rb
   - app/models/assistant/configurable.rb
   - app/models/assistant/function/get_account_statement.rb
   - app/models/provider/plaid.rb
   - app/models/user.rb
   - app/views/impersonation_sessions/_approval_bar.html.erb
+  - app/views/layouts/application.html.erb
   - app/views/layouts/doorkeeper/application.html.erb
+  - app/views/settings/_settings_nav.html.erb
   - config/routes.rb
   - mobile/README.md
   - mobile/android/app/src/main/AndroidManifest.xml

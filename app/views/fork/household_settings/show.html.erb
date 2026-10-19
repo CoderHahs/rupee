@@ -1,0 +1,25 @@
+<%= content_for :page_title, t(".page_title") %>
+
+<%= settings_section title: t(".timezone_title"), subtitle: t(".timezone_subtitle") do %>
+  <div class="space-y-4">
+    <% if @household_settings.timezone_confirmed? %>
+      <%= render DS::Alert.new(
+            variant: :success,
+            message: t(".timezone_confirmed_on",
+                       timezone: Current.family.timezone,
+                       date: l(@household_settings.timezone_confirmed_at.to_date, format: :long))
+          ) %>
+    <% else %>
+      <%= render DS::Alert.new(variant: :warning, message: t(".timezone_unconfirmed")) %>
+    <% end %>
+
+    <%= styled_form_with scope: :household, url: settings_household_path, method: :patch, class: "space-y-4",
+          data: { controller: "fork--browser-timezone" } do |form| %>
+      <%= form.select :timezone,
+            timezone_options,
+            { label: t(".timezone_label"), selected: Current.family.timezone, include_blank: Current.family.timezone.blank? },
+            { data: { fork__browser_timezone_target: "select" } } %>
+      <%= render DS::Button.new(text: t(".timezone_submit"), variant: :primary, type: :submit) %>
+    <% end %>
+  </div>
+<% end %>

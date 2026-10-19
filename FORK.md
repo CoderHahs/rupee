@@ -22,6 +22,8 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
 | `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
 | `config/routes.rb`                                         | `draw :fork` loads `config/routes/fork.rb` (R22.2)                           | No                 |
+| `app/views/layouts/application.html.erb`                   | Renders `fork/banners` under the system alerts (R18.10)                      | No                 |
+| `app/views/settings/_settings_nav.html.erb`, `app/helpers/settings_helper.rb` | Settings > Household link for admins (R18.10)            | No                 |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
@@ -41,6 +43,11 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `config/fork/upstream_edits.yml` | The upstream merge base and the exact list of upstream files the fork edits              |
 | `lib/fork/surface_check.rb`, `bin/check-fork-surface` | The surface check described above                                   |
 | `.github/workflows/fork.yml`  | Runs the surface check on every push and pull request                                       |
+| `db/migrate/*_fork_*.rb`      | Fork migrations; `db/schema.rb` is regenerated from them                                    |
+| `app/models/fork/`, `app/models/concerns/fork/` | Fork models, and extensions to upstream models applied in `fork.rb`       |
+| `app/controllers/fork/`, `app/views/fork/` | Fork pages, including Settings > Household and the banners                     |
+| `app/javascript/controllers/fork/` | Fork Stimulus controllers                                                              |
+| `config/fork/locales/fork.en.yml` | English strings for fork pages                                                          |
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `test/lib/fork/`              | Tests for the above                                                                         |
