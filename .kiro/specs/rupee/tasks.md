@@ -46,11 +46,11 @@
 
 - [ ] 2. Fork scaffolding
   - _Requirements: 13.3, 18.8, 18.10, 22.2_
-  - [ ] 2.1 Create the fork layout from design §4.1: namespaces, `config/initializers/fork.rb`, `config/routes/fork.rb`, `config/fork_schedule.yml` and `FORK.md` with the hook list
+  - [x] 2.1 Create the fork layout from design §4.1: namespaces, `config/initializers/fork.rb`, `config/routes/fork.rb`, `config/fork_schedule.yml` and `FORK.md` with the hook list
     - _Requirements: 22.2_
-  - [ ] 2.2 Write the schedule loader, which creates, updates and removes only `fork:*` jobs
+  - [x] 2.2 Write the schedule loader, which creates, updates and removes only `fork:*` jobs
     - _Requirements: 22.2_
-  - [ ] 2.3 Write `bin/check-fork-surface`: hook list, file collisions, column collisions and the regenerated schema (design §5.1), and run it in `.github/workflows/fork.yml`
+  - [x] 2.3 Write `bin/check-fork-surface`: hook list, file collisions, column collisions and the regenerated schema (design §5.1), and run it in `.github/workflows/fork.yml`
     - _Requirements: 22.2_
   - [ ] 2.4 Create `household_settings` (design §5.2) and the household settings page
     - _Requirements: 13.3, 18.8, 18.10_

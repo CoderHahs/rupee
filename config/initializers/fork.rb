@@ -1,4 +1,5 @@
 require Rails.root.join("lib/fork/boot_checks").to_s
+require Rails.root.join("lib/fork/schedule").to_s
 
 # Rupee's fork-level configuration. Runs after brand.rb and
 # filter_parameter_logging.rb, because initializers load in name order.
@@ -18,5 +19,15 @@ Rails.application.configure do
     config.hosts.concat(Fork::BootChecks.allowed_hosts)
     # Container health checks call /up by IP, with no matching Host header.
     config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  end
+end
+
+# Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.
+Sidekiq.configure_server do |config|
+  config.on(:startup) do
+    names = Fork::Schedule.load!
+    Rails.logger.info("[Fork::Schedule] Loaded #{names.size} fork cron jobs")
+  rescue => e
+    Rails.logger.error("[Fork::Schedule] Failed to load #{Fork::Schedule::PATH}: #{e.message}")
   end
 end

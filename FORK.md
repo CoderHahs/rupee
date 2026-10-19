@@ -8,6 +8,8 @@ The design, requirements and task list live in [`.kiro/specs/rupee/`](.kiro/spec
 
 Fork code lives in files upstream does not have. An upstream file is edited only when there is no hook for the change, and every such edit is listed below so each upstream merge can re-check it.
 
+`config/fork/upstream_edits.yml` is the exact list of edited upstream paths, and `bin/check-fork-surface` enforces it on every push (`.github/workflows/fork.yml`). It fails when an upstream file is edited but not listed, when a listed file is no longer edited, when upstream's `main` has added a file the fork also adds, when a fork migration is not named `<timestamp>_fork_<name>.rb`, when upstream and the fork add the same table or the same column to an upstream table, and when `db/schema.rb` is not upstream's schema plus the fork's migrations. Run it locally with `bin/check-fork-surface`; `--upstream FETCH_HEAD` after fetching upstream adds the collision checks, and `--schema` regenerates the schema in a scratch database.
+
 ### Upstream files the fork edits
 
 | File                                                       | Change                                                                       | Upstream candidate |
@@ -19,6 +21,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/controllers/concerns/webauthn_relying_party.rb`       | The passkey prompt shows the product name instead of "Sure"                  | Yes                |
 | `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
 | `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
+| `config/routes.rb`                                         | `draw :fork` loads `config/routes/fork.rb` (R22.2)                           | No                 |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
@@ -32,6 +35,12 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `lib/fork/boot_checks.rb`     | The boot checks as a pure module, so they can be tested without booting production          |
 | `lib/fork/branding.rb`        | Finds upstream's English "Sure" strings and renders the overrides                           |
 | `lib/tasks/fork.rake`         | `bin/rails fork:locales` regenerates the overrides                                          |
+| `config/routes/fork.rb`       | Fork routes, drawn from `config/routes.rb`                                                  |
+| `config/fork_schedule.yml`    | Fork cron jobs, each named `fork:*`                                                         |
+| `lib/fork/schedule.rb`        | Loads the fork cron jobs when Sidekiq boots and removes `fork:*` jobs no longer listed      |
+| `config/fork/upstream_edits.yml` | The upstream merge base and the exact list of upstream files the fork edits              |
+| `lib/fork/surface_check.rb`, `bin/check-fork-surface` | The surface check described above                                   |
+| `.github/workflows/fork.yml`  | Runs the surface check on every push and pull request                                       |
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `test/lib/fork/`              | Tests for the above                                                                         |
@@ -94,9 +103,10 @@ Rails does not support rotating the deterministic key for columns that are queri
 ## Merging upstream
 
 1. `git fetch upstream` and merge `upstream/main` into a branch.
-2. Re-check each row of "Upstream files the fork edits".
-3. Run the full test suite.
-4. Record the merged upstream commit below.
+2. Regenerate `db/schema.rb` (load upstream's schema, then run the fork migrations) rather than hand-merging it.
+3. Set `base` in `config/fork/upstream_edits.yml` to the merged upstream commit, then run `bin/check-fork-surface --upstream upstream/main --schema`.
+4. Re-check each row of "Upstream files the fork edits", run `bin/rails fork:locales`, and run the full test suite.
+5. Record the merged upstream commit below.
 
 | Date                   | Upstream commit merged |
 | ---------------------- | ---------------------- |

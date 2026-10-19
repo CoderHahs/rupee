@@ -1,0 +1,10 @@
+# Rupee's cron jobs. Fork::Schedule loads this file when a Sidekiq server
+# boots: it creates or updates each job, then removes any `fork:*` job that is
+# no longer listed. Every key must start with `fork:`. Times are UTC.
+#
+# fork:example:
+#   cron: "15 6 * * *"
+#   class: "Fork::ExampleJob"
+#   queue: "scheduled"
+#   description: "What the job does"
+{}
