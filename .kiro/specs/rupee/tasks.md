@@ -44,7 +44,7 @@
   - [ ] 1.4 Read the Bank of Canada's Valet terms (open question 1)
     - _Requirements: 4.4_
 
-- [ ] 2. Fork scaffolding
+- [x] 2. Fork scaffolding
   - _Requirements: 13.3, 18.8, 18.10, 22.2_
   - [x] 2.1 Create the fork layout from design §4.1: namespaces, `config/initializers/fork.rb`, `config/routes/fork.rb`, `config/fork_schedule.yml` and `FORK.md` with the hook list
     - _Requirements: 22.2_
@@ -62,7 +62,7 @@
     - _Requirements: 13.3, 13.8_
   - [x] 2.6 Build the time-zone confirmation and its banner (design §4.10)
     - _Requirements: 18.10_
-  - [ ] 2.7 Test: upstream's suite stays green, the surface check fails on each defect class, and no LLM host is contacted with the switch off
+  - [x] 2.7 Test: upstream's suite stays green, the surface check fails on each defect class, and no LLM host is contacted with the switch off
     - _Requirements: 22.2, 13.3_
 
 - [ ] 3. Deployment, secrets and backups
