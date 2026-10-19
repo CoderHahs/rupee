@@ -1,0 +1,66 @@
+<%= content_for :page_title, t(".page_title") %>
+
+<%= settings_section title: t(".title"), subtitle: t(".subtitle") do %>
+  <div class="space-y-4">
+    <% if @household_settings.ai_enabled? %>
+      <%= render DS::Alert.new(
+            variant: :success,
+            message: t(".on_since",
+                       name: @household_settings.ai_consented_by&.display_name || t(".someone"),
+                       date: l(@household_settings.ai_consented_at.to_date, format: :long))
+          ) %>
+    <% else %>
+      <%= render DS::Alert.new(variant: :info, message: t(".off_notice")) %>
+    <% end %>
+
+    <%= render DS::Note.new(title: t(".sends_title")) do %>
+      <ul class="list-disc pl-4 space-y-1">
+        <% %i[categorize chat statements bills insights mcp].each do |item| %>
+          <li><%= t(".sends.#{item}") %></li>
+        <% end %>
+      </ul>
+      <p><%= t(".never_sends") %></p>
+    <% end %>
+
+    <% if @household_settings.ai_enabled? %>
+      <%= render DS::Button.new(
+            text: t(".turn_off"),
+            variant: :outline_destructive,
+            href: settings_household_ai_path,
+            method: :delete,
+            confirm: t(".turn_off_confirm")
+          ) %>
+    <% elsif @choice.configured_options.none? %>
+      <%= render DS::Alert.new(variant: :warning, title: t(".no_provider_title")) do %>
+        <p><%= t(".no_provider_body") %></p>
+        <% if Current.user.super_admin? %>
+          <%= render DS::Link.new(text: t(".no_provider_action"), href: settings_hosting_path, variant: :secondary, size: :sm) %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= styled_form_with scope: :household_ai, url: settings_household_ai_path, method: :patch, class: "space-y-4" do |form| %>
+        <%= form.select :provider,
+              @choice.configured_options.map { |option|
+                [ option.self_hosted? ? t(".self_hosted", host: option.host) : option.name, option.key ]
+              },
+              { label: t(".provider_label"), selected: @choice.current } %>
+        <p class="text-secondary text-sm"><%= t(".provider_help") %></p>
+
+        <div class="flex items-center justify-between gap-4">
+          <div class="space-y-1">
+            <p class="text-sm text-primary"><%= t(".guests_label") %></p>
+            <p class="text-secondary text-sm"><%= t(".guests_help") %></p>
+          </div>
+          <%= form.toggle :ai_for_guests, checked: @household_settings.ai_for_guests? %>
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-sm text-primary"><%= t(".consent_label") %></p>
+          <%= form.toggle :consent, checked: false %>
+        </div>
+
+        <%= render DS::Button.new(text: t(".turn_on"), variant: :primary, type: :submit) %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

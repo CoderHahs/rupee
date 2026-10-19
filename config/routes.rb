@@ -1019,6 +1019,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # Rupee's routes live in config/routes/fork.rb
+  draw :fork
+
   # Defines the root path route ("/")
   root "pages#dashboard"
 end

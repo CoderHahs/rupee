@@ -1,0 +1,156 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Checks that the fork still touches upstream Sure only where FORK.md says it
+# does (design §4.1, §5.1). See Fork::SurfaceCheck for the rules.
+#
+#   bin/check-fork-surface                      edits, migration names and LLM lookups
+#   bin/check-fork-surface --upstream REF       also collisions with upstream at REF
+#   bin/check-fork-surface --schema             also regenerate db/schema.rb
+#
+# REF is usually upstream's main, fetched with
+#   git fetch https://github.com/we-promise/sure.git main
+# and passed as FETCH_HEAD. --schema needs a test database server; it creates
+# and drops two scratch databases named rupee_fork_surface_*.
+
+require "fileutils"
+require "open3"
+require "optparse"
+require_relative "../lib/fork/surface_check"
+
+ROOT = File.expand_path("..", __dir__)
+Dir.chdir(ROOT)
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/check-fork-surface [--upstream REF] [--schema]"
+  opts.on("--upstream REF", "Upstream commit to check for collisions") { |ref| options[:upstream] = ref }
+  opts.on("--schema", "Regenerate db/schema.rb and compare it") { options[:schema] = true }
+end.parse!
+
+def git(*args)
+  out, err, status = Open3.capture3("git", *args)
+  abort "git #{args.join(' ')} failed: #{err}" unless status.success?
+  # Migrations can contain non-ASCII text, whatever the shell's locale.
+  out.force_encoding(Encoding::UTF_8)
+end
+
+def paths(*args)
+  git(*args).split("\n").reject(&:empty?)
+end
+
+def run!(env, *command)
+  puts "  $ #{command.join(' ')}"
+  system(env, *command) || abort("#{command.join(' ')} failed")
+end
+
+check = Fork::SurfaceCheck
+base, listed = check.load_edits(check::EDITS_PATH)
+problems = []
+
+git("cat-file", "-e", "#{base}^{commit}")
+problems << "#{base} in #{check::EDITS_PATH} is not an ancestor of HEAD" unless system("git", "merge-base", "--is-ancestor", base, "HEAD")
+
+if options[:upstream]
+  merge_base = git("merge-base", "HEAD", options[:upstream]).strip
+  unless merge_base == git("rev-parse", base).strip
+    problems << "The merge base with #{options[:upstream]} is #{merge_base}, but #{check::EDITS_PATH} says #{base}. " \
+                "Set `base` to the upstream commit last merged."
+  end
+end
+
+# The working tree against the base, so uncommitted work is checked too.
+edited = paths("diff", "--name-only", "--no-renames", "--diff-filter=MDT", base)
+fork_added = paths("diff", "--name-only", "--no-renames", "--diff-filter=A", base) |
+             paths("ls-files", "--others", "--exclude-standard")
+
+check.unlisted_edits(edited, listed).each do |path|
+  problems << "#{path} is an upstream file the fork edits, but #{check::EDITS_PATH} does not list it"
+end
+check.stale_entries(edited, listed).each do |path|
+  problems << "#{path} is listed in #{check::EDITS_PATH}, but the fork no longer edits it"
+end
+check.misnamed_migrations(fork_added).each do |path|
+  problems << "#{path} is a fork migration, so its name must be <timestamp>_fork_<name>.rb"
+end
+
+# Every LLM lookup in app/ must go through the household AI switch.
+terms = %w[preferred_llm_provider for_concept(:llm) get_provider(:openai)].flat_map { |term| [ "-e", term ] }
+llm_grep, = Open3.capture2("git", "grep", "--untracked", "-n", "-I", "-F", *terms, "--", "app/")
+llm_matches = llm_grep.force_encoding(Encoding::UTF_8).each_line.map { |line| line.chomp.split(":", 3) }
+check.ungated_llm_lookups(llm_matches).each do |location|
+  problems << "#{location} looks up the LLM provider directly. Use Family#permitted_llm_provider, " \
+              "so the household AI switch covers it (design §4.10)"
+end
+
+fork_migrations = fork_added.select { |path| check.fork_migration?(path) }
+
+if options[:upstream]
+  upstream_added = paths("diff", "--name-only", "--no-renames", "--diff-filter=A", base, options[:upstream])
+
+  check.file_collisions(fork_added, upstream_added).each do |path|
+    problems << "Upstream has added #{path}, which the fork also adds"
+  end
+
+  fork_changes = check.migration_changes(fork_migrations.map { |path| File.read(path, encoding: "UTF-8") })
+  upstream_migrations = upstream_added.select { |path| path.start_with?("db/migrate/") }
+  upstream_changes = check.migration_changes(upstream_migrations.map { |path| git("show", "#{options[:upstream]}:#{path}") })
+
+  check.table_collisions(fork_changes, upstream_changes).each do |table|
+    problems << "Upstream and the fork both create the table #{table}"
+  end
+  check.column_collisions(fork_changes, upstream_changes).each do |pair|
+    problems << "Upstream and the fork both add the column #{pair}"
+  end
+else
+  puts "Skipping the collision checks: pass --upstream REF to run them."
+end
+
+if options[:schema]
+  puts "Regenerating db/schema.rb from upstream's schema at #{base[0, 12]} and the fork's migrations"
+
+  dir = File.join(ROOT, "tmp/fork_surface")
+  FileUtils.mkdir_p(dir)
+  upstream_schema = File.join(dir, "upstream_schema.rb")
+  File.write(upstream_schema, git("show", "#{base}:db/schema.rb"))
+  versions = fork_migrations.map { |path| File.basename(path)[/\A\d+/] }
+
+  # Both schemas are loaded and dumped by the same server, so differences in
+  # how Postgres versions print constraints do not count.
+  dumps = { "committed" => "db/schema.rb", "regenerated" => upstream_schema }.to_h do |name, source|
+    dump = File.join(dir, "#{name}.rb")
+    env = { "RAILS_ENV" => "test", "POSTGRES_DB" => "rupee_fork_surface_#{name}",
+            "DISABLE_DATABASE_ENVIRONMENT_CHECK" => "1", "SCHEMA" => dump }
+
+    begin
+      run!(env, "bin/rails", "db:drop", "db:create")
+      run!(env.merge("SCHEMA" => source), "bin/rails", "db:schema:load")
+      if name == "regenerated" && versions.any?
+        # Loading a schema marks every migration up to its version as run,
+        # including fork migrations older than an upstream merge.
+        forget = "ARGV.each { |v| c = ActiveRecord::Base.connection; c.delete('DELETE FROM schema_migrations WHERE version = ' + c.quote(v)) }"
+        run!(env, "bin/rails", "runner", forget, *versions)
+        run!(env, "bin/rails", "db:migrate")
+      end
+      run!(env, "bin/rails", "db:schema:dump")
+    ensure
+      system(env, "bin/rails", "db:drop", out: File::NULL)
+    end
+
+    [ name, dump ]
+  end
+
+  diff, = Open3.capture2("diff", "-u", dumps["committed"], dumps["regenerated"])
+  unless diff.empty?
+    problems << "db/schema.rb does not match upstream's schema plus the fork's migrations. " \
+                "Regenerate it rather than editing it by hand:\n#{diff}"
+  end
+end
+
+if problems.empty?
+  puts "Fork surface OK: #{listed.size} upstream files edited, #{fork_added.size} files added."
+else
+  puts "Fork surface check failed:"
+  problems.each { |problem| puts "  - #{problem}" }
+  exit 1
+end

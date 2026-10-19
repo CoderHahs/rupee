@@ -7,6 +7,8 @@ class Family::AutoCategorizeTransactionsTest < ActiveSupport::TestCase
     # Fresh family: fixture families carry categorized transactions that
     # would pollute the Bayes training set.
     @family = Family.create!(name: "Bayes Entry Family")
+    # Rupee: a new family has the household AI switch off; these tests need it on.
+    @family.household_settings.update!(ai_enabled: true)
     @account = @family.accounts.create!(name: "Entry test", balance: 100, currency: "USD", accountable: Depository.new)
     @coffee = @family.categories.create!(name: "Coffee")
     @groceries = @family.categories.create!(name: "Groceries")

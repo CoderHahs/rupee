@@ -181,6 +181,7 @@ end %>
       <% end %>
 
       <%= yield :system_alerts %>
+      <%= render "fork/banners" %>
 
       <% if content_for?(:page_header) %>
         <%= yield :page_header %>

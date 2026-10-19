@@ -1,0 +1,12 @@
+# Upstream's tests assume AI is available, so fixture households have the
+# fork's AI switch on, for guests too. Tests of the switch turn it off.
+_fixture:
+  model_class: Fork::HouseholdSetting
+
+<% %w[empty dylan_family inactive_trial].each do |family| %>
+<%= family %>:
+  family: <%= family %>
+  ai_enabled: true
+  ai_consented_at: <%= 1.day.ago %>
+  ai_for_guests: true
+<% end %>

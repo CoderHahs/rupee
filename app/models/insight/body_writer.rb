@@ -78,6 +78,6 @@ class Insight::BodyWriter
       return @provider if defined?(@provider)
       return @provider = nil unless family.users.any?(&:ai_enabled?)
 
-      @provider = Provider::Registry.preferred_llm_provider
+      @provider = family.permitted_llm_provider
     end
 end

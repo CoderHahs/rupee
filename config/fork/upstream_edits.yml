@@ -1,0 +1,54 @@
+# The upstream commit the fork is based on, and every upstream file the fork
+# edits. bin/check-fork-surface fails when an edited upstream file is missing
+# from this list or a listed file is no longer edited. FORK.md explains each
+# edit. After merging upstream, set `base` to the merged upstream commit.
+base: 0da863b78971629705d0a5ec5db8998dc97c974c
+
+upstream_edits:
+  - app/controllers/concerns/webauthn_relying_party.rb
+  - app/controllers/family_merchants_controller.rb
+  - app/helpers/bills_helper.rb
+  - app/helpers/settings_helper.rb
+  - app/models/assistant/configurable.rb
+  - app/models/assistant/function/get_account_statement.rb
+  - app/models/assistant/function/import_bank_statement.rb
+  - app/models/family/auto_merchant_detector.rb
+  - app/models/insight/body_writer.rb
+  - app/models/pdf_import.rb
+  - app/models/provider/plaid.rb
+  - app/models/provider_merchant/enhancer.rb
+  - app/models/recurring_transaction/ai_setup_suggester.rb
+  - app/models/rule/registry/transaction_resource.rb
+  - app/models/user.rb
+  - app/views/impersonation_sessions/_approval_bar.html.erb
+  - app/views/layouts/application.html.erb
+  - app/views/layouts/doorkeeper/application.html.erb
+  - app/views/settings/_settings_nav.html.erb
+  - config/routes.rb
+  - mobile/README.md
+  - mobile/android/app/src/main/AndroidManifest.xml
+  - mobile/docs/TECHNICAL_GUIDE.md
+  - mobile/ios/Runner.xcodeproj/project.pbxproj
+  - mobile/ios/Runner/Info.plist
+  - mobile/lib/l10n/app_en.arb
+  - mobile/lib/l10n/app_localizations.dart
+  - mobile/lib/l10n/app_localizations_en.dart
+  - mobile/lib/l10n/app_localizations_sv.dart
+  - mobile/lib/l10n/app_sv.arb
+  - mobile/lib/main.dart
+  - mobile/lib/screens/intro_screen_stub.dart
+  - mobile/lib/screens/transaction_form_screen.dart
+  - mobile/lib/services/biometric_service.dart
+  - public/offline.html
+  - test/controllers/admin/system_health_push_notifications_test.rb
+  - test/controllers/mfa_controller_test.rb
+  - test/controllers/password_resets_controller_test.rb
+  - test/controllers/settings/providers_controller_test.rb
+  - test/controllers/subscriptions_controller_test.rb
+  - test/jobs/deliver_insight_notification_job_test.rb
+  - test/models/family/auto_categorize_transactions_test.rb
+  - test/models/push_notification_test_test.rb
+  - test/models/user_test.rb
+  - test/system/admin/system_health_test.rb
+  - test/system/onboardings_test.rb
+  - test/vcr_cassettes/plaid/link_token.yml

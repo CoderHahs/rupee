@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_29_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1195,6 +1195,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_120000) do
     t.index ["account_provider_id"], name: "index_holdings_on_account_provider_id"
     t.index ["provider_security_id"], name: "index_holdings_on_provider_security_id"
     t.index ["security_id"], name: "index_holdings_on_security_id"
+  end
+
+  create_table "household_settings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "ai_consented_at"
+    t.uuid "ai_consented_by_id"
+    t.boolean "ai_enabled", default: false, null: false
+    t.boolean "ai_for_guests", default: false, null: false
+    t.boolean "card_benefits_enabled", default: false, null: false
+    t.datetime "created_at", null: false
+    t.integer "credit_lead_days", default: 7, null: false
+    t.decimal "credit_match_threshold", precision: 3, scale: 2, default: "0.8", null: false
+    t.datetime "credit_match_watermark_at"
+    t.uuid "family_id", null: false
+    t.decimal "missed_value_threshold", precision: 3, scale: 2, default: "1.0", null: false
+    t.datetime "timezone_confirmed_at"
+    t.datetime "updated_at", null: false
+    t.index ["ai_consented_by_id"], name: "index_household_settings_on_ai_consented_by_id"
+    t.index ["family_id"], name: "index_household_settings_on_family_id", unique: true
+    t.check_constraint "credit_lead_days >= 1 AND credit_lead_days <= 60", name: "chk_household_settings_credit_lead_days"
+    t.check_constraint "credit_match_threshold >= 0::numeric AND credit_match_threshold <= 1::numeric", name: "chk_household_settings_credit_match_threshold"
+    t.check_constraint "missed_value_threshold >= 0::numeric AND missed_value_threshold <= 1::numeric", name: "chk_household_settings_missed_value_threshold"
   end
 
   create_table "ibkr_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3007,6 +3028,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_29_120000) do
   add_foreign_key "holdings", "accounts", on_delete: :cascade
   add_foreign_key "holdings", "securities"
   add_foreign_key "holdings", "securities", column: "provider_security_id"
+  add_foreign_key "household_settings", "families", on_delete: :cascade
+  add_foreign_key "household_settings", "users", column: "ai_consented_by_id", on_delete: :nullify
   add_foreign_key "ibkr_accounts", "ibkr_items"
   add_foreign_key "ibkr_items", "families"
   add_foreign_key "impersonation_session_logs", "impersonation_sessions"
