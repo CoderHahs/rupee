@@ -21,7 +21,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
-| Tests asserting English copy (8 files)                     | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
+| Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
 
 ### Files the fork adds
 
