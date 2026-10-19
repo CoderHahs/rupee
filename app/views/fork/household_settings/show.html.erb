@@ -23,3 +23,10 @@
     <% end %>
   </div>
 <% end %>
+
+<%= settings_section title: t(".ai_title"), subtitle: t(".ai_subtitle") do %>
+  <div class="flex items-center justify-between gap-4">
+    <p class="text-sm text-primary"><%= @household_settings.ai_enabled? ? t(".ai_on") : t(".ai_off") %></p>
+    <%= render DS::Link.new(text: t(".ai_manage"), href: settings_household_ai_path, variant: :secondary, size: :sm) %>
+  </div>
+<% end %>

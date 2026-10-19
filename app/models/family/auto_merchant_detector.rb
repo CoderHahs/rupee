@@ -66,7 +66,7 @@ class Family::AutoMerchantDetector
     # configured provider, with fallback handled by
     # Provider::Registry.preferred_llm_provider.
     def llm_provider
-      Provider::Registry.preferred_llm_provider
+      family.permitted_llm_provider
     end
 
     def default_logo_provider_url

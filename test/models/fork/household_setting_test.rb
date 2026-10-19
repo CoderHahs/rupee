@@ -6,9 +6,10 @@ class Fork::HouseholdSettingTest < ActiveSupport::TestCase
   end
 
   test "a family's settings are created on first read with the design defaults" do
-    assert_nil Fork::HouseholdSetting.find_by(family: @family)
+    family = Family.create!(name: "New", currency: "USD")
+    assert_nil Fork::HouseholdSetting.find_by(family: family)
 
-    settings = @family.household_settings
+    settings = family.household_settings
 
     assert settings.persisted?
     assert_not settings.ai_enabled?

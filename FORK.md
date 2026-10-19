@@ -8,7 +8,7 @@ The design, requirements and task list live in [`.kiro/specs/rupee/`](.kiro/spec
 
 Fork code lives in files upstream does not have. An upstream file is edited only when there is no hook for the change, and every such edit is listed below so each upstream merge can re-check it.
 
-`config/fork/upstream_edits.yml` is the exact list of edited upstream paths, and `bin/check-fork-surface` enforces it on every push (`.github/workflows/fork.yml`). It fails when an upstream file is edited but not listed, when a listed file is no longer edited, when upstream's `main` has added a file the fork also adds, when a fork migration is not named `<timestamp>_fork_<name>.rb`, when upstream and the fork add the same table or the same column to an upstream table, and when `db/schema.rb` is not upstream's schema plus the fork's migrations. Run it locally with `bin/check-fork-surface`; `--upstream FETCH_HEAD` after fetching upstream adds the collision checks, and `--schema` regenerates the schema in a scratch database.
+`config/fork/upstream_edits.yml` is the exact list of edited upstream paths, and `bin/check-fork-surface` enforces it on every push (`.github/workflows/fork.yml`). It fails when an upstream file is edited but not listed, when a listed file is no longer edited, when upstream's `main` has added a file the fork also adds, when a fork migration is not named `<timestamp>_fork_<name>.rb`, when upstream and the fork add the same table or the same column to an upstream table, when `db/schema.rb` is not upstream's schema plus the fork's migrations, and when code in `app/` looks up the LLM provider (`preferred_llm_provider`, `for_concept(:llm)` or `get_provider(:openai)`) outside the files listed in `Fork::SurfaceCheck::LLM_LOOKUP_ALLOWED`, so an AI feature upstream adds cannot bypass the household AI switch. Run it locally with `bin/check-fork-surface`; `--upstream FETCH_HEAD` after fetching upstream adds the collision checks, and `--schema` regenerates the schema in a scratch database.
 
 ### Upstream files the fork edits
 
@@ -24,9 +24,11 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `config/routes.rb`                                         | `draw :fork` loads `config/routes/fork.rb` (R22.2)                           | No                 |
 | `app/views/layouts/application.html.erb`                   | Renders `fork/banners` under the system alerts (R18.10)                      | No                 |
 | `app/views/settings/_settings_nav.html.erb`, `app/helpers/settings_helper.rb` | Settings > Household link for admins (R18.10)            | No                 |
+| The 10 LLM call sites in `bills_helper.rb`, `family_merchants_controller.rb`, `provider_merchant/enhancer.rb`, `pdf_import.rb` (2), `assistant/function/import_bank_statement.rb`, `insight/body_writer.rb`, `recurring_transaction/ai_setup_suggester.rb`, `family/auto_merchant_detector.rb`, `rule/registry/transaction_resource.rb` | Ask `Family#permitted_llm_provider` instead of the registry, so the household AI switch covers them (R13.3) | Yes |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
+| `test/models/family/auto_categorize_transactions_test.rb`  | Its new family turns the household AI switch on                              | No                 |
 
 ### Files the fork adds
 
@@ -50,7 +52,9 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `config/fork/locales/fork.en.yml` | English strings for fork pages                                                          |
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
-| `test/lib/fork/`              | Tests for the above                                                                         |
+| `app/models/concerns/fork/family_ai_gate.rb`, `user_ai_gate.rb`, `app/controllers/concerns/fork/mcp_ai_gate.rb`, `imports_ai_gate.rb` | The household AI switch, prepended to `Family`, `User`, `McpController` and `ImportsController` in `fork.rb` (R13.3) |
+| `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
+| `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
 
@@ -72,6 +76,10 @@ The authenticator issuer only labels new enrolments. Codes from existing ones st
 ### Secrets in a public repository
 
 The repository is public, so CI runs gitleaks over the full history on every push and pull request. Run it locally before pushing with `gitleaks git --redact .`. The 18 entries in `.gitleaksignore` are all from upstream commits: placeholder keys in tests and docs, a recorded cassette, and PostHog's public `phc_` project key. Never add a fork commit to that file; remove the secret, rotate it, and rewrite the unpushed history instead.
+
+### The household AI switch
+
+`household_settings.ai_enabled` stays false until an admin agrees, in Settings > Household > Rupee, to what Rupee sends and picks the model provider. With it off, no LLM call site gets a provider, categorization runs only the local Bayes categorizer, chat is off for every member, MCP answers every method with JSON-RPC error -32010, and PDF and document imports are refused. Guests also need `ai_for_guests`. Turning Rupee off keeps the record of who agreed and when.
 
 ## Production requirements
 

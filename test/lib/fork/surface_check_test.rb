@@ -90,6 +90,20 @@ class Fork::SurfaceCheckTest < ActiveSupport::TestCase
     assert_equal Set["transfer_fx_details"], Check.table_collisions(fork, upstream)
   end
 
+  test "an LLM lookup outside the allowed files must go through the switch" do
+    matches = [
+      [ "app/models/insight/body_writer.rb", "81", "      @provider = Provider::Registry.preferred_llm_provider" ],
+      [ "app/models/new_feature.rb", "3", "    Provider::Registry.for_concept(:llm).providers.first" ],
+      [ "app/controllers/thing_controller.rb", "9", "    Provider::Registry.get_provider(:openai)" ],
+      [ "app/models/family.rb", "188", "    jev || Provider::Registry.preferred_llm_provider" ],
+      [ "app/models/eval/runner.rb", "12", "    Provider::Registry.preferred_llm_provider" ],
+      [ "app/models/family/auto_merchant_detector.rb", "67", "    # Provider::Registry.preferred_llm_provider." ]
+    ]
+
+    expected = [ "app/models/insight/body_writer.rb:81", "app/models/new_feature.rb:3", "app/controllers/thing_controller.rb:9" ]
+    assert_equal expected, Check.ungated_llm_lookups(matches)
+  end
+
   test "the committed list of upstream edits loads" do
     base, listed = Check.load_edits(Rails.root.join(Check::EDITS_PATH))
 

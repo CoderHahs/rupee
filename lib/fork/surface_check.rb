@@ -15,7 +15,9 @@ require "yaml"
 #   - upstream and the fork create the same table, or add the same column to
 #     an upstream table;
 #   - db/schema.rb differs from upstream's schema plus the fork's migrations
-#     (checked by the script, which needs a database).
+#     (checked by the script, which needs a database);
+#   - code in app/ looks up the LLM provider without going through the
+#     household AI switch (design §4.10).
 module Fork
   module SurfaceCheck
     EDITS_PATH = "config/fork/upstream_edits.yml"
@@ -27,6 +29,20 @@ module Fork
 
     # change_table methods that take a column name but add nothing.
     NON_ADDING = %w[remove remove_references remove_belongs_to index remove_index rename change change_default change_null].freeze
+
+    # Lookups that reach an LLM provider directly instead of through
+    # Family#permitted_llm_provider.
+    LLM_LOOKUP = /\b(?:preferred_llm_provider|for_concept\(:llm\)|get_provider\(:openai\))/
+
+    # Where a direct lookup is allowed, and why.
+    LLM_LOOKUP_ALLOWED = [
+      "app/models/provider/registry.rb",              # defines the lookup
+      "app/models/concerns/fork/family_extension.rb", # permitted_llm_provider itself
+      "app/models/family.rb",                         # wrapped by Fork::FamilyAiGate
+      "app/models/assistant/provided.rb",             # chat, off through User#ai_available?
+      "app/models/ai_health.rb",                      # probes send only synthetic inputs
+      "app/models/eval/"                              # the developers' evaluation harness
+    ].freeze
 
     Changes = Struct.new(:tables, :columns) do
       def self.empty = new(Set.new, Set.new)
@@ -95,6 +111,17 @@ module Fork
       end
 
       Changes.new(tables, columns)
+    end
+
+    # LLM lookups outside the allowed files, as "path:line". Takes
+    # [path, line, text] matches; comments are not lookups.
+    def ungated_llm_lookups(matches)
+      matches.filter_map do |path, line, text|
+        next if text.lstrip.start_with?("#") || !text.match?(LLM_LOOKUP)
+        next if LLM_LOOKUP_ALLOWED.any? { |allowed| allowed.end_with?("/") ? path.start_with?(allowed) : path == allowed }
+
+        "#{path}:#{line}"
+      end
     end
 
     def table_collisions(fork_changes, upstream_changes)

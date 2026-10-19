@@ -54,11 +54,11 @@
     - _Requirements: 22.2_
   - [x] 2.4 Create `household_settings` (design §5.2) and the household settings page
     - _Requirements: 13.3, 18.8, 18.10_
-  - [ ] 2.5 Build the AI switch: `Family#permitted_llm_provider`, the 10 call-site edits, the `Family` and `User` prepends, MCP -32010 and the import refusal (design §4.10)
+  - [x] 2.5 Build the AI switch: `Family#permitted_llm_provider`, the 10 call-site edits, the `Family` and `User` prepends, MCP -32010 and the import refusal (design §4.10)
     - _Requirements: 13.3_
   - [x] 2.8 Name the product and the agent Rupee: the `PRODUCT_NAME` default, Plaid's `client_name` and the product name in the assistant prompts (design §4.12)
     - _Requirements: 13.5, 22.4_
-  - [ ] 2.9 Build Rupee's onboarding consent: provider choice, what data is sent, and `ai_consented_at` (design §4.12)
+  - [x] 2.9 Build Rupee's onboarding consent: provider choice, what data is sent, and `ai_consented_at` (design §4.12)
     - _Requirements: 13.3, 13.8_
   - [x] 2.6 Build the time-zone confirmation and its banner (design §4.10)
     - _Requirements: 18.10_

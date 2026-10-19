@@ -4,4 +4,5 @@
 
 scope :settings, as: :settings do
   resource :household, only: %i[show update], controller: "fork/household_settings"
+  resource :household_ai, path: "household/ai", only: %i[show update destroy], controller: "fork/household_ais"
 end
