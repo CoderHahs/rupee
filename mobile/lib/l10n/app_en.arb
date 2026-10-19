@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appTitle": "Sure Finances",
+  "appTitle": "Rupee",
   "@appTitle": { "description": "Application title shown in the OS task switcher." },
 
   "commonCancel": "Cancel",
@@ -436,13 +436,13 @@
   "backendConfigTitle": "Configuration",
   "@backendConfigTitle": { "description": "Headline on the backend configuration screen." },
 
-  "backendConfigSubtitle": "Update your Sure server URL",
+  "backendConfigSubtitle": "Update your Rupee server URL",
   "@backendConfigSubtitle": { "description": "Subtitle below the headline on the backend configuration screen." },
 
   "backendConfigExampleUrlsLabel": "Example URLs",
   "@backendConfigExampleUrlsLabel": { "description": "Label for the example URLs info box on the config screen." },
 
-  "backendConfigUrlLabel": "Sure server URL",
+  "backendConfigUrlLabel": "Rupee server URL",
   "@backendConfigUrlLabel": { "description": "Label for the server URL field on the config screen." },
 
   "backendConfigUrlHint": "https://app.sure.am",
@@ -724,7 +724,7 @@
   "loginOrDivider": "or",
   "@loginOrDivider": { "description": "Divider label between primary and alternate sign-in options." },
 
-  "loginServerUrlHeading": "Sure server URL:",
+  "loginServerUrlHeading": "Rupee server URL:",
   "@loginServerUrlHeading": { "description": "Heading above the displayed server URL on the login screen." },
 
   "loginApiKeyLoginButton": "API-Key Login",
@@ -919,7 +919,7 @@
   "backendConfigSuccess": "Connection successful!",
   "@backendConfigSuccess": { "description": "Message shown when the connection test succeeds." },
 
-  "backendConfigServerError": "Server responded with status {code}. Please check if this is a Sure backend server.",
+  "backendConfigServerError": "Server responded with status {code}. Please check if this is a Rupee backend server.",
   "@backendConfigServerError": {
     "description": "Error shown when the server returns a non-success status during the connection test.",
     "placeholders": { "code": { "type": "int" } }

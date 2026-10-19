@@ -35,7 +35,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
 
   test "enables MFA with valid code" do
     @user.setup_mfa!
-    totp = ROTP::TOTP.new(@user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(@user.otp_secret, issuer: Rails.configuration.x.product_name)
 
     post mfa_path, params: { code: totp.now }
 
@@ -54,7 +54,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
   # before the guard this fell into disable_mfa! and wiped the whole setup.
   test "resubmitting the enrollment code does not tear down the finished setup" do
     @user.setup_mfa!
-    code = ROTP::TOTP.new(@user.otp_secret, issuer: "Sure Finances").now
+    code = ROTP::TOTP.new(@user.otp_secret, issuer: Rails.configuration.x.product_name).now
 
     post mfa_path, params: { code: code }
     assert_response :success
@@ -80,7 +80,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
   # the user can enter the next code instead of restarting setup.
   test "a replayed enrollment code keeps the pending secret" do
     @user.setup_mfa!
-    code = ROTP::TOTP.new(@user.otp_secret, issuer: "Sure Finances").now
+    code = ROTP::TOTP.new(@user.otp_secret, issuer: Rails.configuration.x.product_name).now
     assert @user.verify_otp?(code), "simulates the concurrent submit that claimed the step first"
     secret = @user.otp_secret
 
@@ -140,7 +140,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to verify_mfa_path
     assert_equal @user.id, session[:mfa_user_id]
 
-    totp = ROTP::TOTP.new(@user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(@user.otp_secret, issuer: Rails.configuration.x.product_name)
 
     post verify_mfa_path, params: { code: totp.now }
 
@@ -157,7 +157,7 @@ class MfaControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to verify_mfa_path
     assert_equal @user.id, session[:mfa_user_id]
 
-    totp = ROTP::TOTP.new(@user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(@user.otp_secret, issuer: Rails.configuration.x.product_name)
     @user.update_column(:active, false)
 
     assert_no_difference -> { Session.where(user_id: @user.id).count } do

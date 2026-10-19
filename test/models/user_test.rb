@@ -218,7 +218,7 @@ class UserTest < ActiveSupport::TestCase
     user = users(:family_member)
     user.setup_mfa!
 
-    totp = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name)
     valid_code = totp.now
 
     assert user.verify_otp?(valid_code)
@@ -231,7 +231,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp? accepts a TOTP code only once" do
     user = users(:family_member)
     user.setup_mfa!
-    code = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now
+    code = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now
 
     assert user.verify_otp?(code)
     assert_not user.verify_otp?(code)
@@ -241,7 +241,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp? accepts the next time step's code after one was used" do
     user = users(:family_member)
     user.setup_mfa!
-    totp = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name)
 
     travel_to Time.zone.at(1_800_000_000) do
       assert user.verify_otp?(totp.now)
@@ -257,7 +257,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp? lets only one of two concurrent uses of a code through" do
     user = users(:family_member)
     user.setup_mfa!
-    code = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now
+    code = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now
     first = User.find(user.id)
     second = User.find(user.id)
 
@@ -275,7 +275,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp? claim_otp_time_step! lets only one of two racing connections claim a step" do
     user = users(:family_member)
     user.setup_mfa!
-    totp = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name)
     now = Time.current
     time_step = totp.verify(totp.at(now), at: now)
 
@@ -300,7 +300,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp tells a replayed code apart from an invalid one" do
     user = users(:family_member)
     user.setup_mfa!
-    code = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now
+    code = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now
 
     assert_equal :accepted, user.verify_otp(code)
     assert_equal :replayed, user.verify_otp(code)
@@ -314,7 +314,7 @@ class UserTest < ActiveSupport::TestCase
   test "verify_otp? claim_otp_time_step! does not claim across a replaced secret" do
     user = users(:family_member)
     user.setup_mfa!
-    totp = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances")
+    totp = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name)
     now = Time.current
     time_step = totp.verify(totp.at(now), at: now)
     stale = User.find(user.id)
@@ -329,13 +329,13 @@ class UserTest < ActiveSupport::TestCase
   test "setting up or disabling MFA forgets the last used time step" do
     user = users(:family_member)
     user.setup_mfa!
-    assert user.verify_otp?(ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now)
+    assert user.verify_otp?(ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now)
     assert_not_nil user.reload.otp_last_used_at
 
     user.setup_mfa!
     assert_nil user.reload.otp_last_used_at
 
-    assert user.verify_otp?(ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now)
+    assert user.verify_otp?(ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now)
     user.disable_mfa!
     assert_nil user.reload.otp_last_used_at
   end
@@ -344,7 +344,7 @@ class UserTest < ActiveSupport::TestCase
     user = users(:family_member)
     user.setup_mfa!
     user.enable_mfa!
-    valid_code = ROTP::TOTP.new(user.otp_secret, issuer: "Sure Finances").now
+    valid_code = ROTP::TOTP.new(user.otp_secret, issuer: Rails.configuration.x.product_name).now
 
     BCrypt::Password.expects(:new).never
 
@@ -431,7 +431,7 @@ class UserTest < ActiveSupport::TestCase
 
     assert_match %r{otpauth://totp/}, user.provisioning_uri
     assert_match %r{secret=#{user.otp_secret}}, user.provisioning_uri
-    assert_match %r{issuer=Sure}, user.provisioning_uri
+    assert_match %r{issuer=#{Regexp.escape(ERB::Util.url_encode(Rails.configuration.x.product_name))}}, user.provisioning_uri
   end
 
   test "ai_available? returns true when openai access token set in settings" do

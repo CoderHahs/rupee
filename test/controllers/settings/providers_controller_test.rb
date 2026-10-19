@@ -36,7 +36,7 @@ class Settings::ProvidersControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#financekit-providers-panel" do
       assert_select "a[href=?][data-turbo-frame='_top']", account_path(@source.account), text: "Test Wallet"
       assert_select "span", text: "Sync active"
-      assert_select "dt", text: "Last accepted by Sure"
+      assert_select "dt", text: "Last accepted by Rupee"
       assert_select "dt", text: "Last imported into your family"
       assert_select "time[datetime=?]", @item.last_accepted_at.iso8601
       assert_select "time[datetime=?]", @item.last_imported_at.iso8601
@@ -54,7 +54,7 @@ class Settings::ProvidersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "turbo-frame#financekit-providers-panel" do
-      assert_select "span", text: "Repair required — open the Sure iOS app"
+      assert_select "span", text: "Repair required — open the Rupee iOS app"
       assert_select "dd", text: "Not yet", count: 2
       assert_select "a", text: "Test Wallet"
     end
