@@ -1,0 +1,6 @@
+<%# AGPLv3 source offer for the running version (design §7.7). %>
+<p>
+  <%= t("fork.source_notice.text", product_name: product_name) %>
+  <%= link_to (Sure.commit_sha.present? ? t("fork.source_notice.commit_link", commit: Sure.commit_sha.first(7)) : t("fork.source_notice.source_link")),
+        fork_source_commit_url, class: "text-secondary underline", target: "_blank", rel: "noopener" %>
+</p>

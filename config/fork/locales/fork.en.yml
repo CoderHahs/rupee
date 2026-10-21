@@ -5,6 +5,10 @@ en:
     household_settings: Household
     household_ais: Rupee
   fork:
+    source_notice:
+      text: "%{product_name} is free software under the GNU AGPLv3."
+      commit_link: Source for this version (%{commit})
+      source_link: Source code
     settings_nav:
       household_label: Household
     banners:

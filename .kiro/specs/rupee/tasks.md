@@ -81,7 +81,7 @@
     - _Requirements: 21.4, 21.9_
   - [x] 3.7 Add secret scanning on every push and pull request (design §8)
     - _Requirements: 22.7_
-  - [ ] 3.6 Add the AGPL footer with the running commit, and the README notices (design §7.7)
+  - [x] 3.6 Add the AGPL footer with the running commit, and the README notices (design §7.7)
     - _Requirements: 22.4, 22.5_
 
 - [ ] 4. Plaid gem upgrade and transaction signals
