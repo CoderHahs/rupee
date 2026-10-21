@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Rupee on AWS (design §3.1 option A, §7.2, §7.4): one VM on the tailnet with
+  no inbound ports, EBS volumes and the backup bucket encrypted with a
+  customer-managed KMS key, and restic reaching the bucket through the
+  instance role.
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t4g.medium
+    Description: 2 vCPUs and 4 GB, Graviton (arm64). The image is built for arm64 and amd64.
+  DataVolumeSize:
+    Type: Number
+    Default: 40
+    MinValue: 20
+    Description: GiB for Docker's data, which holds the Postgres, Active Storage and Redis volumes.
+  UbuntuAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id
+    Description: Ubuntu 24.04 for arm64. Use the amd64 path with an x86 instance type.
+
+Resources:
+  # One key for the disks and the backups. Deleting the stack keeps the key
+  # and the bucket, so the backups stay readable.
+  Key:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Rupee disks and backups
+      EnableKeyRotation: true
+      PendingWindowInDays: 30
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AccountAdministers
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: "*"
+
+  KeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}
+      TargetKeyId: !Ref Key
+
+  # restic's repository. Versioning keeps overwritten or deleted objects for
+  # 30 days, so a compromised VM cannot destroy the backups at once.
+  BackupBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !GetAtt Key.Arn
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+
+  BackupBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BackupBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyPlainHttp
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt BackupBucket.Arn
+              - !Sub ${BackupBucket.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+
+  # The VM's role: restic's bucket access, and Session Manager as a way in
+  # that needs no open port.
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: backups
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource: !GetAtt BackupBucket.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub ${BackupBucket.Arn}/*
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt Key.Arn
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref Role
+
+  # No inbound rules: members arrive over Tailscale, which only dials out.
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Rupee VM, outbound only
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref UbuntuAmi
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+      MetadataOptions:
+        HttpTokens: required
+        HttpPutResponseHopLimit: 2
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: 16
+            Encrypted: true
+            KmsKeyId: !GetAtt Key.Arn
+            DeleteOnTermination: true
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: !Ref DataVolumeSize
+            Encrypted: true
+            KmsKeyId: !GetAtt Key.Arn
+            DeleteOnTermination: false
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          # Mounts the data volume at /var/lib/docker, then installs Docker
+          # and Tailscale. Joining the tailnet is a manual step (deploy/aws/README.md),
+          # so no auth key is stored in the instance's user data.
+          set -euxo pipefail
+
+          # The data volume is the only unformatted, unpartitioned disk.
+          data_disk=""
+          for disk in $(lsblk -dpno NAME,TYPE | awk '$2 == "disk" {print $1}'); do
+            if [ -z "$(lsblk -no PARTTYPE,FSTYPE "$disk" | tr -d '[:space:]')" ]; then
+              data_disk="$disk"
+            fi
+          done
+          if [ -n "$data_disk" ]; then
+            mkfs.ext4 -L rupee-data "$data_disk"
+          fi
+          mkdir -p /var/lib/docker
+          echo "LABEL=rupee-data /var/lib/docker ext4 defaults,nofail 0 2" >> /etc/fstab
+          mount -a
+
+          apt-get update
+          apt-get install -y ca-certificates curl unattended-upgrades
+          curl -fsSL https://get.docker.com | sh
+          curl -fsSL https://tailscale.com/install.sh | sh
+          systemctl enable --now docker tailscaled
+
+Outputs:
+  InstanceId:
+    Value: !Ref Instance
+  BackupBucketName:
+    Value: !Ref BackupBucket
+  ResticRepository:
+    Description: RESTIC_REPOSITORY for rupee.env
+    Value: !Sub s3:s3.${AWS::Region}.amazonaws.com/${BackupBucket}/rupee
+  KeyArn:
+    Value: !GetAtt Key.Arn

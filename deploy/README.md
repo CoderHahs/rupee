@@ -26,11 +26,12 @@ on.
 | `rupee.env.example` | Every variable the stack needs. Copy it to `rupee.env` (git-ignored)       |
 | `backup.sh`         | restic backups, retention and checks (design §7.4)                         |
 | `backup-cron.sh`    | Schedules `backup.sh` inside the `backup` service                          |
+| `aws/`              | CloudFormation for the VM, encrypted volumes, KMS key and backup bucket    |
 
 ## First deploy
 
-The provider-specific steps (the VM, encrypted volumes, the bucket) are
-added once the provider is chosen (task 3.1a).
+On AWS, first create the VM, its encrypted volumes and the backup bucket
+with [`aws/`](aws/README.md).
 
 1. Install Docker and Tailscale on the VM, then `sudo tailscale up`.
 2. Copy this directory to the VM. Fill in `rupee.env` from

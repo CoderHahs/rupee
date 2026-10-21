@@ -181,7 +181,7 @@ flowchart LR
 
 With option A, the default Caddy rule returns 404 for every path except the two public ones on the public listener. The tailnet listener serves the whole app. Plaid learns the webhook URL from each link token, and upstream builds it from the request's host (`plaid_items_controller.rb:180-184`), so under option A `FORK_PLAID_WEBHOOK_URL` names the public route instead (§4.9).
 
-**Chosen (Task 0.4): A, on a cloud VM.** A small VM (2 vCPUs, 4 GB) joins the tailnet. Its disks use the provider's volume encryption (§7.2), and Tailscale Funnel or a Cloudflare Tunnel carries the two public routes. The cloud provider is chosen in Task 3.1.
+**Chosen (Task 0.4): A, on a cloud VM.** A small VM (2 vCPUs, 4 GB) joins the tailnet. Its disks use the provider's volume encryption (§7.2), and Tailscale Funnel or a Cloudflare Tunnel carries the two public routes. The cloud provider is AWS (chosen 2026-10-21): EBS volumes and the S3 backup bucket are encrypted with a customer-managed KMS key, and `deploy/aws/rupee.yml` creates them.
 
 ### 3.2 Opening up later (Task 0.2)
 
