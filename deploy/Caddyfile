@@ -1,0 +1,32 @@
+# Rupee's reverse proxy (design §3.1 option A, §7.1).
+#
+# Tailscale terminates TLS on the VM and forwards plain HTTP to these two
+# listeners, which compose binds to 127.0.0.1 only:
+#   :8080  the tailnet listener, from `tailscale serve`. The whole app.
+#   :8081  the public listener, from `tailscale funnel`. Only the routes in
+#          RUPEE_PUBLIC_PATHS; every other path is a 404.
+{
+	admin off
+	auto_https off
+}
+
+(app) {
+	reverse_proxy {$RUPEE_UPSTREAM:web:3000}
+}
+
+:8080 {
+	import app
+}
+
+:8081 {
+	# Plaid's webhook by default. Add /bills_feed/* to publish calendar feeds.
+	@public path {$RUPEE_PUBLIC_PATHS:/webhooks/plaid}
+
+	handle @public {
+		import app
+	}
+
+	handle {
+		respond 404
+	}
+}

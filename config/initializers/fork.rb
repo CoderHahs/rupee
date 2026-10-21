@@ -6,6 +6,9 @@ require Rails.root.join("lib/fork/schedule").to_s
 Rails.application.configure do
   config.x.product_name = ENV.fetch("PRODUCT_NAME", "Rupee")
 
+  # Where the running version's source is published (AGPLv3 section 13).
+  config.x.source_url = ENV.fetch("FORK_SOURCE_URL", "https://github.com/CoderHahs/rupee")
+
   # English strings where upstream names the app "Sure". Later load-path
   # entries win, so this must stay outside config/locales.
   config.i18n.load_path += Dir[Rails.root.join("config/fork/locales/*.yml")]

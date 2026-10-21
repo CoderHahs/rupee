@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Rupee** is a personal fork of [Sure](https://github.com/we-promise/sure), which is itself a community fork of [Maybe Finance](https://github.com/maybe-finance/maybe). Rupee is not affiliated with or endorsed by Maybe Finance Inc. or the Sure maintainers, and it uses neither the Maybe name nor its logo. Like Sure, it is licensed under the [GNU AGPLv3](LICENSE). What the fork changes is described in [FORK.md](FORK.md).
+
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/we-promise/sure)
 [![View performance data on Skylight](https://badges.skylight.io/typical/s6PEZSKwcklL.svg)](https://oss.skylight.io/app/applications/s6PEZSKwcklL)
 [![Dosu](https://raw.githubusercontent.com/dosu-ai/assets/main/dosu-badge.svg)](https://app.dosu.dev/a72bdcfd-15f5-4edc-bd85-ea0daa6c3adc/ask)

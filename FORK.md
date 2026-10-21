@@ -25,6 +25,9 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/views/layouts/application.html.erb`                   | Renders `fork/banners` under the system alerts (R18.10)                      | No                 |
 | `app/views/settings/_settings_nav.html.erb`, `app/helpers/settings_helper.rb` | Settings > Household link for admins (R18.10)            | No                 |
 | The 10 LLM call sites in `bills_helper.rb`, `family_merchants_controller.rb`, `provider_merchant/enhancer.rb`, `pdf_import.rb` (2), `assistant/function/import_bank_statement.rb`, `insight/body_writer.rb`, `recurring_transaction/ai_setup_suggester.rb`, `family/auto_merchant_detector.rb`, `rule/registry/transaction_resource.rb` | Ask `Family#permitted_llm_provider` instead of the registry, so the household AI switch covers them (R13.3) | Yes |
+| `app/views/layouts/shared/_footer.html.erb`                | Renders `fork/source_notice`, the AGPLv3 source offer for the running commit (R22.4) | No |
+| `app/views/users/_user_menu.html.erb`                      | The commit link points at the fork's source instead of upstream's (R22.4)    | No                 |
+| `README.md`                                                | A notice at the top: based on Maybe Finance and Sure, not affiliated, AGPLv3 (R22.5) | No         |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
@@ -53,6 +56,8 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `app/models/concerns/fork/family_ai_gate.rb`, `user_ai_gate.rb`, `app/controllers/concerns/fork/mcp_ai_gate.rb`, `imports_ai_gate.rb` | The household AI switch, prepended to `Family`, `User`, `McpController` and `ImportsController` in `fork.rb` (R13.3) |
+| `deploy/`                     | The production stack: compose file, Caddy allowlist, env template, restic backups and the runbook (design §3.1, §7) |
+| `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
 | `FORK.md`                     | This file                                                                                   |
@@ -99,6 +104,8 @@ In production Rupee refuses to boot unless all of these are set. Upstream Sure o
 Keep the three encryption keys and `SECRET_KEY_BASE` in a password manager as well as on the host. Losing the encryption keys makes every encrypted column unreadable, including in backups.
 
 **An instance that already ran without keys** has plaintext rows. Set the keys plus `ACTIVE_RECORD_ENCRYPTION_SUPPORT_UNENCRYPTED_DATA=true`, run `bin/rails security:backfill_encryption`, then remove that variable.
+
+The production stack and its runbook are in [`deploy/`](deploy/README.md): Caddy behind Tailscale with the public webhook allowlist, Postgres on a Unix socket only, and nightly restic backups with the retention and checks in design §7.4.
 
 ## Key rotation runbook
 
