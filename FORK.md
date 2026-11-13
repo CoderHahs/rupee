@@ -34,7 +34,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/models/provider/registry.rb`, `app/views/settings/hostings/_provider_selection.html.erb` | Register `bank_of_canada` and `fx_router`; the picker lists the router (R4.4) | Yes |
 | `app/models/concerns/accountable.rb`, `app/models/investment_statement.rb`, `app/controllers/reports_controller.rb`, `app/models/balance_sheet/account_totals.rb` | A currency with no rate contributes 0 instead of a rate of 1 (R4.6) | Yes |
 | `app/views/pages/dashboard/_balance_sheet.html.erb`        | Foreign accounts show the converted amount through `fork/fx_amount`; the net-worth-by-currency section (R4.8, R4.10) | No |
-| `test/models/exchange_rate_test.rb`                        | The lookback test uses the fork's 7-day window instead of 5                  | No                 |
+| `test/models/exchange_rate_test.rb`, `test/models/investment_statement_test.rb` | The lookback test uses the 7-day window; the missing-rate test expects the account left out, not a rate of 1 | No |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
 | `test/models/family/auto_categorize_transactions_test.rb`  | Its new family turns the household AI switch on                              | No                 |
 

@@ -8,8 +8,8 @@ class Fork::TransferFxDetail < ApplicationRecord
 
   # @return [Fork::TransferFxDetail, nil] nil when the currencies match
   def self.build_for(transfer)
-    outflow = transfer.outflow_transaction&.entry
-    inflow = transfer.inflow_transaction&.entry
+    outflow = entry_of(transfer.outflow_transaction)
+    inflow = entry_of(transfer.inflow_transaction)
     return nil unless outflow && inflow && outflow.currency != inflow.currency
 
     outflow_amount = outflow.amount.abs
@@ -32,6 +32,15 @@ class Fork::TransferFxDetail < ApplicationRecord
       detail.spread_bps = ((implied / quote.rate - 1) * 10_000).round(1)
     end
     detail
+  end
+
+  # Reads the entry without loading and caching a nil association on a
+  # transaction whose entry is created after the transfer.
+  def self.entry_of(transaction)
+    return nil unless transaction
+    return transaction.entry if transaction.association(:entry).loaded?
+
+    Entry.find_by(entryable_type: "Transaction", entryable_id: transaction.id)
   end
 
   def self.reference_quote(from, to, date)

@@ -58,6 +58,7 @@ upstream_edits:
   - test/controllers/subscriptions_controller_test.rb
   - test/jobs/deliver_insight_notification_job_test.rb
   - test/models/exchange_rate_test.rb
+  - test/models/investment_statement_test.rb
   - test/models/family/auto_categorize_transactions_test.rb
   - test/models/push_notification_test_test.rb
   - test/models/user_test.rb
