@@ -104,6 +104,8 @@ class BalanceSheet::AccountTotals
       return account.balance if account.currency == family.currency
 
       rate = exchange_rates[account.currency]
+      return 0 unless rate # no rate within 7 days: left out (Rupee design §4.6)
+
       account.balance * rate
     end
 end

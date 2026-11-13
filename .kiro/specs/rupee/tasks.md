@@ -110,19 +110,19 @@
   - [x] 5.6 Test: one test per webhook code, a bad signature, an unhandled code, and the guard at 9, 10 and 11 Items
     - _Requirements: 2.5, 3.4, 3.5, 3.6, 3.7_
 
-- [ ] 6. Exchange rates
+- [x] 6. Exchange rates
   - _Requirements: 4.4, 4.5, 4.6, 4.8, 4.9, 4.10_
-  - [ ] 6.1 Add `Provider::BankOfCanada` and the router, and select it at deploy (D9)
+  - [x] 6.1 Add `Provider::BankOfCanada` and the router, and select it at deploy (D9)
     - _Requirements: 4.4_
-  - [ ] 6.2 Add `exchange_rates.source` and `observed_on`, the importer changes and the backfill (design §4.6)
+  - [x] 6.2 Add `exchange_rates.source` and `observed_on`, the importer changes and the backfill (design §4.6)
     - _Requirements: 4.5, 4.8_
-  - [ ] 6.3 Build `Fork::Fx.lookup`, the guards in `rates_for` and its callers, and the banners
+  - [x] 6.3 Build `Fork::Fx.lookup`, the guards in `rates_for` and its callers, and the banners
     - _Requirements: 4.5, 4.6_
-  - [ ] 6.4 Render `fork/fx_amount` wherever a converted amount is shown (open question 16)
+  - [x] 6.4 Render `fork/fx_amount` wherever a converted amount is shown (open question 16)
     - _Requirements: 4.8_
-  - [ ] 6.5 Write `transfer_fx_details` from the `Transfer` extension, and the net-worth breakdown by currency
+  - [x] 6.5 Write `transfer_fx_details` from the `Transfer` extension, and the net-worth breakdown by currency
     - _Requirements: 4.9, 4.10_
-  - [ ] 6.6 Test: the §6.1 and §6.2 examples, the missing-rate fixture across every page, and the nightly Valet check
+  - [x] 6.6 Test: the §6.1 and §6.2 examples, the missing-rate fixture across every page, and the nightly Valet check
     - _Requirements: 4.4, 4.5, 4.6, 4.9_
 
 - [x] 7. Security prices

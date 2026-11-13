@@ -292,7 +292,8 @@ class InvestmentStatement
       return amount if amount.nil?
       numeric = amount.is_a?(Money) ? amount.amount : amount
       return numeric if from_currency == family.currency
-      rate = exchange_rates[from_currency] || 1
+      rate = exchange_rates[from_currency]
+      return 0 unless rate # no rate within 7 days: left out (Rupee design §4.6)
       numeric * rate
     end
 

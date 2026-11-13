@@ -1,0 +1,14 @@
+<%# Exchange-rate banners: one per missing pair and date, and one per carry of more than 3 days (design §4.6). %>
+<% fx = Fork::RequestFx.instance %>
+<% fx.misses.values.each do |miss| %>
+  <div class="mx-auto w-full max-w-2xl mb-4">
+    <%= render DS::Alert.new(variant: :warning, title: t("fork.fx.missing_title", from: miss.from, date: miss.date),
+                             message: t("fork.fx.missing_body", from: miss.from, to: miss.to, days: Fork::Fx::MAX_CARRY_DAYS)) %>
+  </div>
+<% end %>
+<% fx.banner_carries.each do |carry| %>
+  <div class="mx-auto w-full max-w-2xl mb-4">
+    <%= render DS::Alert.new(variant: :info, title: t("fork.fx.carried_title", from: carry.from, to: carry.to, count: carry.carry_days),
+                             message: t("fork.fx.carried_body", from: carry.from, to: carry.to, observed_on: carry.observed_on, date: carry.date)) %>
+  </div>
+<% end %>

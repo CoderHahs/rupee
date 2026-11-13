@@ -1,0 +1,32 @@
+# English strings for exchange rates (design §4.6). Kept apart from
+# fork.en.yml so other tasks' strings do not collide with these.
+en:
+  fork:
+    fx:
+      provider_router: Bank of Canada and Frankfurter (Rupee)
+      not_converted: not converted
+      not_converted_hint: No exchange rate within 7 days, so this amount is left out of totals
+      rate: "rate %{rate}"
+      source: "source %{source}"
+      observed_on: "observed %{date}"
+      carried:
+        one: carried 1 day
+        other: carried %{count} days
+      sources:
+        bank_of_canada: Bank of Canada
+        frankfurter: Frankfurter
+      missing_title: "%{from} amounts on %{date} are left out of totals"
+      missing_body: "No %{from} to %{to} rate within %{days} days."
+      carried_title:
+        one: "%{from} to %{to} rate carried 1 day"
+        other: "%{from} to %{to} rate carried %{count} days"
+      carried_body: "The latest %{from} to %{to} rate is from %{observed_on}, so amounts on %{date} use it."
+      net_worth:
+        title: Net worth by currency
+        native: Assets minus liabilities
+        converted: In %{currency}
+      transfer:
+        below: "%{percent}% below the %{source} rate"
+        above: "%{percent}% above the %{source} rate"
+        at: "At the %{source} rate"
+        no_reference: No reference rate for this day

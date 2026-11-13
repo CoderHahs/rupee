@@ -99,7 +99,9 @@ module Accountable
         if account.currency == family.currency
           account.balance
         else
-          account.balance * (rates[account.currency] || 1)
+          # No rate within 7 days: the account is left out (Rupee design §4.6).
+          rate = rates[account.currency]
+          rate ? account.balance * rate : 0
         end
       }
     end
