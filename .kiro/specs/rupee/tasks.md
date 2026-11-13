@@ -95,19 +95,19 @@
   - [ ] 4.4 Test: per-account counts and sums unchanged by the backfill; no callbacks run
     - _Requirements: 6.5_
 
-- [ ] 5. Item budget and connection health
+- [x] 5. Item budget and connection health
   - _Requirements: 2.5, 2.6, 2.7, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
-  - [ ] 5.1 Create `plaid_item_ledger_entries`, the backfill, and the guard in `Fork::PlaidItemBudget` (design §4.2)
+  - [x] 5.1 Create `plaid_item_ledger_entries`, the backfill, and the guard in `Fork::PlaidItemBudget` (design §4.2)
     - _Requirements: 2.5, 2.6_
-  - [ ] 5.2 Order the account-add chooser with brokerage connectors first (open question 16)
+  - [x] 5.2 Order the account-add chooser with brokerage connectors first (open question 16)
     - _Requirements: 2.7_
-  - [ ] 5.3 Add the `plaid_items` and `plaid_accounts` health columns, and `fork:plaid_health_poll` (design §4.3)
+  - [x] 5.3 Add the `plaid_items` and `plaid_accounts` health columns, and `fork:plaid_health_poll` (design §4.3)
     - _Requirements: 3.1, 3.2, 3.3_
-  - [ ] 5.4 Extend the webhook processor for `PENDING_DISCONNECT`, `NEW_ACCOUNTS_AVAILABLE`, `LOGIN_REPAIRED` and the revocations, and exclude revoked Items from `syncable`
+  - [x] 5.4 Extend the webhook processor for `PENDING_DISCONNECT`, `NEW_ACCOUNTS_AVAILABLE`, `LOGIN_REPAIRED` and the revocations, and exclude revoked Items from `syncable`
     - _Requirements: 3.4, 3.5, 3.6, 3.7_
-  - [ ] 5.5 Build the `/connections` page, its statuses and next actions, and the banners
+  - [x] 5.5 Build the `/connections` page, its statuses and next actions, and the banners
     - _Requirements: 3.8, 3.3_
-  - [ ] 5.6 Test: one test per webhook code, a bad signature, an unhandled code, and the guard at 9, 10 and 11 Items
+  - [x] 5.6 Test: one test per webhook code, a bad signature, an unhandled code, and the guard at 9, 10 and 11 Items
     - _Requirements: 2.5, 3.4, 3.5, 3.6, 3.7_
 
 - [ ] 6. Exchange rates

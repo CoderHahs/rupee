@@ -1,0 +1,14 @@
+<%# Shown instead of opening Plaid Link when the Item budget is spent (design §4.2). %>
+<%= turbo_frame_tag "modal" do %>
+  <%= render DS::Dialog.new do |dialog| %>
+    <% dialog.with_header(title: t("fork.plaid_item_budgets.exhausted.title")) %>
+    <% dialog.with_body do %>
+      <div class="space-y-3 text-sm text-secondary">
+        <p><%= t("fork.plaid_item_budgets.exhausted.used", used: @used, cap: @cap) %></p>
+        <p><%= t("fork.plaid_item_budgets.exhausted.explanation") %></p>
+        <p><%= t("fork.plaid_item_budgets.exhausted.brokerage") %></p>
+        <%= render DS::Link.new(text: t("fork.plaid_item_budgets.exhausted.connections"), href: connections_path, variant: :secondary, size: :sm, frame: :_top) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_050100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1936,29 +1936,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.jsonb "raw_liabilities_payload", default: {}
     t.jsonb "raw_payload", default: {}
     t.jsonb "raw_transactions_payload", default: {}
+    t.datetime "revoked_at"
     t.datetime "updated_at", null: false
     t.index ["plaid_item_id", "plaid_id"], name: "index_plaid_accounts_on_item_and_plaid_id", unique: true
     t.index ["plaid_item_id"], name: "index_plaid_accounts_on_plaid_item_id"
+  end
+
+  create_table "plaid_item_ledger_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "environment", default: "production", null: false
+    t.uuid "family_id"
+    t.string "institution_id"
+    t.string "institution_name"
+    t.string "plaid_id", null: false
+    t.uuid "plaid_item_id"
+    t.datetime "removed_at"
+    t.index ["family_id"], name: "index_plaid_item_ledger_entries_on_family_id"
+    t.index ["plaid_id"], name: "index_plaid_item_ledger_entries_on_plaid_id", unique: true
+    t.index ["plaid_item_id"], name: "index_plaid_item_ledger_entries_on_plaid_item_id"
+    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying, 'production'::character varying]::text[])", name: "chk_plaid_item_ledger_entries_environment"
   end
 
   create_table "plaid_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.string "available_products", default: [], array: true
     t.string "billed_products", default: [], array: true
+    t.datetime "consent_expires_at"
     t.datetime "created_at", null: false
     t.uuid "family_id", null: false
+    t.datetime "health_checked_at"
     t.string "institution_color"
     t.string "institution_id"
     t.string "institution_url"
+    t.string "item_error_code"
+    t.string "item_error_reason"
+    t.datetime "last_successful_update_at"
     t.string "name"
+    t.datetime "new_accounts_available_at"
     t.string "next_cursor"
     t.uuid "owner_id"
+    t.datetime "pending_disconnect_at"
+    t.string "pending_disconnect_reason"
     t.string "plaid_id", null: false
     t.string "plaid_region", default: "us", null: false
     t.jsonb "raw_institution_payload", default: {}
     t.jsonb "raw_payload", default: {}
+    t.datetime "revoked_at"
+    t.datetime "revoked_kept_at"
+    t.string "revoked_reason"
     t.boolean "scheduled_for_deletion", default: false
     t.string "status", default: "good", null: false
+    t.string "update_type"
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_plaid_items_on_family_id"
     t.index ["owner_id"], name: "index_plaid_items_on_owner_id"
@@ -3067,6 +3095,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   add_foreign_key "onchain_wallet_accounts", "onchain_wallet_items"
   add_foreign_key "onchain_wallet_items", "families"
   add_foreign_key "plaid_accounts", "plaid_items"
+  add_foreign_key "plaid_item_ledger_entries", "families", on_delete: :nullify
   add_foreign_key "plaid_items", "families"
   add_foreign_key "plaid_items", "users", column: "owner_id", on_delete: :nullify
   add_foreign_key "push_subscriptions", "users"
