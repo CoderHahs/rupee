@@ -5,6 +5,7 @@
 base: 0da863b78971629705d0a5ec5db8998dc97c974c
 
 upstream_edits:
+  - .github/workflows/ci.yml
   - Gemfile
   - Gemfile.lock
   - README.md
