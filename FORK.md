@@ -27,6 +27,10 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | The 10 LLM call sites in `bills_helper.rb`, `family_merchants_controller.rb`, `provider_merchant/enhancer.rb`, `pdf_import.rb` (2), `assistant/function/import_bank_statement.rb`, `insight/body_writer.rb`, `recurring_transaction/ai_setup_suggester.rb`, `family/auto_merchant_detector.rb`, `rule/registry/transaction_resource.rb` | Ask `Family#permitted_llm_provider` instead of the registry, so the household AI switch covers them (R13.3) | Yes |
 | `app/views/layouts/shared/_footer.html.erb`                | Renders `fork/source_notice`, the AGPLv3 source offer for the running commit (R22.4) | No |
 | `app/views/users/_user_menu.html.erb`                      | The commit link points at the fork's source instead of upstream's (R22.4)    | No                 |
+| `app/models/provider/alpha_vantage.rb`, `app/models/provider/eodhd.rb` | Map XTSX (TSX Venture) to `.TRV` and `V`, with CAD (R5.4) | Yes |
+| `app/models/security/price/importer.rb`                    | Carries and writes `observed_on` on every row (R5.5)                         | Yes                |
+| `app/views/holdings/show.html.erb`, `holdings/sync_prices.turbo_stream.erb`, `trades/_header.html.erb`, `transactions/convert_to_trade.html.erb` | Render `fork/price_label` (R5.5) | No |
+| `test/models/security/health_checker_test.rb`              | Probe is the 7-day window and prices are kept when offline                   | No                 |
 | `README.md`                                                | A notice at the top: based on Maybe Finance and Sure, not affiliated, AGPLv3 (R22.5) | No         |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
@@ -60,6 +64,8 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
+| `app/models/concerns/fork/tsx_provider_assignment.rb`, `price_observation.rb`, `current_price.rb`, `details_throttle.rb`, `health_check_policy.rb`, `app/models/fork/price_quote.rb`, `price_observed_on_backfill.rb` | Security prices (design §4.7): TSX provider assignment (`FORK_TSX_PRICE_PROVIDER`, alpha_vantage or eodhd), `observed_on`, last known price, details throttle, health check policy. Applied in `fork.rb`; `bin/rails fork:backfill_price_observed_on` |
+| `app/views/fork/_price_label.html.erb`, `app/helpers/fork/price_label_helper.rb` | The last price with its observation date |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
 

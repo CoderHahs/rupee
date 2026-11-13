@@ -8,4 +8,11 @@ namespace :fork do
     path.write(Fork::Branding.render(Rails.root.to_s, "Rupee"))
     puts "Wrote #{Fork::Branding.renamed_strings(Rails.root.to_s, 'Rupee').size} strings to #{Fork::Branding::OVERRIDES_PATH}"
   end
+
+  desc "Fill security_prices.observed_on for rows that predate it. Dry run unless DRY_RUN=false"
+  task :backfill_price_observed_on, [ :dry_run ] => :environment do |_t, args|
+    dry_run = ActiveModel::Type::Boolean.new.cast(args[:dry_run] || ENV.fetch("DRY_RUN", "true"))
+    result = Fork::PriceObservedOnBackfill.run!(dry_run: dry_run)
+    puts({ dry_run: dry_run, **result.to_h }.to_json)
+  end
 end

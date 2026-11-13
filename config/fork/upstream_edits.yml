@@ -16,16 +16,23 @@ upstream_edits:
   - app/models/family/auto_merchant_detector.rb
   - app/models/insight/body_writer.rb
   - app/models/pdf_import.rb
+  - app/models/provider/alpha_vantage.rb
+  - app/models/provider/eodhd.rb
   - app/models/provider/plaid.rb
   - app/models/provider_merchant/enhancer.rb
   - app/models/recurring_transaction/ai_setup_suggester.rb
   - app/models/rule/registry/transaction_resource.rb
+  - app/models/security/price/importer.rb
   - app/models/user.rb
   - app/views/impersonation_sessions/_approval_bar.html.erb
+  - app/views/holdings/show.html.erb
   - app/views/layouts/application.html.erb
   - app/views/layouts/doorkeeper/application.html.erb
   - app/views/layouts/shared/_footer.html.erb
+  - app/views/holdings/sync_prices.turbo_stream.erb
   - app/views/settings/_settings_nav.html.erb
+  - app/views/trades/_header.html.erb
+  - app/views/transactions/convert_to_trade.html.erb
   - app/views/users/_user_menu.html.erb
   - config/routes.rb
   - mobile/README.md
@@ -51,6 +58,7 @@ upstream_edits:
   - test/jobs/deliver_insight_notification_job_test.rb
   - test/models/family/auto_categorize_transactions_test.rb
   - test/models/push_notification_test_test.rb
+  - test/models/security/health_checker_test.rb
   - test/models/user_test.rb
   - test/system/admin/system_health_test.rb
   - test/system/onboardings_test.rb

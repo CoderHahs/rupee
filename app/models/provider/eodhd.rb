@@ -24,6 +24,7 @@ class Provider::Eodhd < Provider
     "XLON" => "LSE",
     "XETR" => "XETRA",
     "XTSE" => "TO",
+    "XTSX" => "V",
     "XPAR" => "PA",
     "XAMS" => "AS",
     "XSWX" => "SW",
@@ -48,7 +49,7 @@ class Provider::Eodhd < Provider
 
   EODHD_EXCHANGE_TO_MIC = {
     "US" => "XNYS", "LSE" => "XLON", "XETRA" => "XETR",
-    "TO" => "XTSE", "PA" => "XPAR", "AS" => "XAMS",
+    "TO" => "XTSE", "V" => "XTSX", "PA" => "XPAR", "AS" => "XAMS",
     "SW" => "XSWX", "HK" => "XHKG", "AU" => "XASX",
     "TSE" => "XTKS", "MI" => "XMIL", "MC" => "XMAD",
     "OL" => "XOSL", "HE" => "XHEL", "CO" => "XCSE",
@@ -66,7 +67,7 @@ class Provider::Eodhd < Provider
   }.freeze
 
   EXCHANGE_CURRENCY = {
-    "US" => "USD", "LSE" => "GBP", "XETRA" => "EUR", "TO" => "CAD",
+    "US" => "USD", "LSE" => "GBP", "XETRA" => "EUR", "TO" => "CAD", "V" => "CAD",
     "PA" => "EUR", "AS" => "EUR", "SW" => "CHF", "HK" => "HKD",
     "AU" => "AUD", "TSE" => "JPY", "MI" => "EUR", "MC" => "EUR",
     "OL" => "NOK", "HE" => "EUR", "CO" => "DKK",

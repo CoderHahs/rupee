@@ -24,6 +24,11 @@ en:
         and read bank statements, using an AI model you choose. Nothing is
         sent to a model until an admin agrees.
       ai_setup_action: Set up Rupee
+    price_label:
+      none: No price yet
+      last_price: "Last price %{date}"
+      observed: "Observed %{date} (%{provider})"
+      unknown_provider: no provider
     mcp:
       ai_off: AI features are off for this household
     imports:
