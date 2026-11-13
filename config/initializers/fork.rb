@@ -47,6 +47,12 @@ Rails.application.config.to_prepare do
   # Liabilities and card bills (design §4.5).
   PlaidAccount::Processor.prepend(Fork::LiabilityProcessing)
   RecurringOccurrence.prepend(Fork::RecurringOccurrenceExtension)
+  # Security prices (design §4.7).
+  Security::Resolver.prepend(Fork::TsxProviderAssignment)
+  Security::Price.include(Fork::PriceObservation)
+  Security.prepend(Fork::CurrentPrice)
+  Security.prepend(Fork::DetailsThrottle)
+  Security::HealthChecker.prepend(Fork::HealthCheckPolicy)
 end
 
 # Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.

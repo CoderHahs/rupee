@@ -2397,6 +2397,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_080000) do
     t.datetime "created_at", null: false
     t.string "currency", default: "USD", null: false
     t.date "date", null: false
+    t.date "observed_on"
     t.decimal "price", precision: 19, scale: 4, null: false
     t.boolean "provisional", default: false, null: false
     t.uuid "security_id"

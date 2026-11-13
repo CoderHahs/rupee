@@ -28,6 +28,7 @@ class Security::Price::Importer
     end
 
     prev_price_value = start_price_value
+    prev_observed_on = @start_observed_on # fork: observation date of the carried price (R5.5)
     prev_currency = prev_price_currency || db_price_currency || "USD"
 
     # Fallback for holdings that predate the asset's listing on the provider
@@ -56,6 +57,7 @@ class Security::Price::Importer
         )
         prev_price_value        = earliest_provider_price.price
         prev_currency           = earliest_provider_price.currency || prev_currency
+        prev_observed_on        = earliest_provider_price.date
         @fill_start_date        = earliest_provider_price.date
         advanced_first_price_on = earliest_provider_price.date
       end
@@ -107,6 +109,16 @@ class Security::Price::Importer
         chosen_currency = prev_currency
         used_locf = true
       end
+      # fork: a carried price keeps the date it was observed; a kept stored row
+      # keeps its own; anything else was observed on its own date (R5.5)
+      observed_on = if used_locf
+        prev_observed_on || date
+      elsif has_db_price && !(clear_cache || is_provisional)
+        db_price.observed_on || date
+      else
+        date
+      end
+      prev_observed_on = observed_on
       prev_price_value = chosen_price
       prev_currency = chosen_currency || prev_currency
 
@@ -122,7 +134,8 @@ class Security::Price::Importer
         date:        date,
         price:       chosen_price,
         currency:    chosen_currency || "USD",
-        provisional: provisional
+        provisional: provisional,
+        observed_on: observed_on
       }
     end
 
@@ -297,8 +310,14 @@ class Security::Price::Importer
                                               &.last&.price
         db_price_value = db_prices[start_date]&.price
 
-        return provider_price_value if provider_price_value.present? && provider_price_value.to_f > 0
-        return db_price_value if db_price_value.present? && db_price_value.to_f > 0
+        if provider_price_value.present? && provider_price_value.to_f > 0
+          @start_observed_on = provider_prices.select { |date, _| date <= start_date }.keys.max
+          return provider_price_value
+        end
+        if db_price_value.present? && db_price_value.to_f > 0
+          @start_observed_on = db_prices[start_date].observed_on || start_date
+          return db_price_value
+        end
         return nil
       end
 
@@ -311,11 +330,14 @@ class Security::Price::Importer
         .max_by { |date, _| date }
         &.last&.price
 
-      return provider_price_value if provider_price_value.present? && provider_price_value.to_f > 0
+      if provider_price_value.present? && provider_price_value.to_f > 0
+        @start_observed_on = provider_prices.select { |date, _| date < cutoff_date }.keys.max
+        return provider_price_value
+      end
 
       # Fall back to most recent DB price before cutoff
       currency = prev_price_currency || db_price_currency
-      Security::Price
+      price, observed_on, date = Security::Price
         .where(security_id: security.id)
         .where("date < ?", cutoff_date)
         .where("price > 0")
@@ -323,7 +345,9 @@ class Security::Price::Importer
         .then { |q| currency.present? ? q.where(currency: currency) : q }
         .order(date: :desc)
         .limit(1)
-        .pick(:price)
+        .pick(:price, :observed_on, :date)
+      @start_observed_on = observed_on || date
+      price
     end
 
     def determine_provisional_status(date:, has_provider_price:, used_locf:, existing_provisional:)

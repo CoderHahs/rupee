@@ -69,7 +69,7 @@
           <% if trade.qty.positive? && trade.security.current_price.present? %>
             <div class="flex items-center justify-between text-sm">
               <dt class="text-secondary"><%= t(".current_market_price_label") %></dt>
-              <dd class="text-primary privacy-sensitive"><%= format_money trade.security.current_price %></dd>
+              <dd class="text-primary privacy-sensitive"><%= render "fork/price_label", security: trade.security %></dd>
             </div>
           <% end %>
 

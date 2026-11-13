@@ -83,6 +83,11 @@ en:
         explanation: Plaid caps the Items this household can create, and a deleted Item still uses its slot, so no new Plaid connection can be started.
         brokerage: Brokerage accounts can still be connected through SnapTrade or Questrade.
         connections: See all connections
+    price_label:
+      none: No price yet
+      last_price: "Last price %{date}"
+      observed: "Observed %{date} (%{provider})"
+      unknown_provider: no provider
     mcp:
       ai_off: AI features are off for this household
     imports:

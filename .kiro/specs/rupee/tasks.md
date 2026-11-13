@@ -125,15 +125,15 @@
   - [ ] 6.6 Test: the §6.1 and §6.2 examples, the missing-rate fixture across every page, and the nightly Valet check
     - _Requirements: 4.4, 4.5, 4.6, 4.9_
 
-- [ ] 7. Security prices
+- [x] 7. Security prices
   - _Requirements: 5.4, 5.5_
-  - [ ] 7.1 Map XTSX (TSX Venture) to `.TRV` and `V` with CAD, and assign TSX and TSXV listings to the chosen provider (D20)
+  - [x] 7.1 Map XTSX (TSX Venture) to `.TRV` and `V` with CAD, and assign TSX and TSXV listings to the chosen provider (D20)
     - _Requirements: 5.4_
-  - [ ] 7.2 Add `security_prices.observed_on`, the backfill, and the carried-price label (D21)
+  - [x] 7.2 Add `security_prices.observed_on`, the backfill, and the carried-price label (D21)
     - _Requirements: 5.5_
-  - [ ] 7.3 Add `Fork::HealthCheckPolicy` and `Fork::DetailsThrottle` (design §4.7)
+  - [x] 7.3 Add `Fork::HealthCheckPolicy` and `Fork::DetailsThrottle` (design §4.7)
     - _Requirements: 5.5_
-  - [ ] 7.4 Test: no null `observed_on` after the backfill, and a failed health check keeps prices
+  - [x] 7.4 Test: no null `observed_on` after the backfill, and a failed health check keeps prices
     - _Requirements: 5.5_
 
 - [ ] 8. Liabilities and card statement bills
