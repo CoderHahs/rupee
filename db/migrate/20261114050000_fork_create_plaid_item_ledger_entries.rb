@@ -18,7 +18,7 @@ class ForkCreatePlaidItemLedgerEntries < ActiveRecord::Migration[8.1]
 
       t.index :plaid_id, unique: true
       t.index :plaid_item_id
-      t.check_constraint "environment IN ('sandbox', 'production')", name: "chk_plaid_item_ledger_entries_environment"
+      t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying::text, 'production'::character varying::text])", name: "chk_plaid_item_ledger_entries_environment"
     end
   end
 end

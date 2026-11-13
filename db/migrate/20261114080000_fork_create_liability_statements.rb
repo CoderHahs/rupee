@@ -25,7 +25,7 @@ class ForkCreateLiabilityStatements < ActiveRecord::Migration[8.1]
               name: "idx_liability_statements_account_issued_on"
       t.index %i[account_id due_on], unique: true, where: "issued_on IS NULL",
               name: "idx_liability_statements_account_due_on"
-      t.check_constraint "source IN ('plaid', 'manual')", name: "chk_liability_statements_source"
+      t.check_constraint "source::text = ANY (ARRAY['plaid'::character varying::text, 'manual'::character varying::text])", name: "chk_liability_statements_source"
       t.check_constraint "issued_on IS NOT NULL OR due_on IS NOT NULL", name: "chk_liability_statements_dated"
     end
   end

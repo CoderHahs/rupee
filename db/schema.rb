@@ -1600,7 +1600,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_080000) do
     t.index ["account_id"], name: "index_liability_statements_on_account_id"
     t.index ["recurring_occurrence_id"], name: "index_liability_statements_on_recurring_occurrence_id"
     t.check_constraint "issued_on IS NOT NULL OR due_on IS NOT NULL", name: "chk_liability_statements_dated"
-    t.check_constraint "source::text = ANY (ARRAY['plaid'::character varying, 'manual'::character varying]::text[])", name: "chk_liability_statements_source"
+    t.check_constraint "source::text = ANY (ARRAY['plaid'::character varying::text, 'manual'::character varying::text])", name: "chk_liability_statements_source"
   end
 
   create_table "llm_usages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1980,7 +1980,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_080000) do
     t.index ["family_id"], name: "index_plaid_item_ledger_entries_on_family_id"
     t.index ["plaid_id"], name: "index_plaid_item_ledger_entries_on_plaid_id", unique: true
     t.index ["plaid_item_id"], name: "index_plaid_item_ledger_entries_on_plaid_item_id"
-    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying, 'production'::character varying]::text[])", name: "chk_plaid_item_ledger_entries_environment"
+    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying::text, 'production'::character varying::text])", name: "chk_plaid_item_ledger_entries_environment"
   end
 
   create_table "plaid_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
