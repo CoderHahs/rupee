@@ -8,15 +8,21 @@ upstream_edits:
   - README.md
   - app/controllers/concerns/webauthn_relying_party.rb
   - app/controllers/family_merchants_controller.rb
+  - app/controllers/reports_controller.rb
   - app/helpers/bills_helper.rb
   - app/helpers/settings_helper.rb
   - app/models/assistant/configurable.rb
   - app/models/assistant/function/get_account_statement.rb
   - app/models/assistant/function/import_bank_statement.rb
+  - app/models/balance_sheet/account_totals.rb
+  - app/models/concerns/accountable.rb
+  - app/models/exchange_rate/importer.rb
   - app/models/family/auto_merchant_detector.rb
   - app/models/insight/body_writer.rb
+  - app/models/investment_statement.rb
   - app/models/pdf_import.rb
   - app/models/provider/plaid.rb
+  - app/models/provider/registry.rb
   - app/models/provider_merchant/enhancer.rb
   - app/models/recurring_transaction/ai_setup_suggester.rb
   - app/models/rule/registry/transaction_resource.rb
@@ -25,7 +31,9 @@ upstream_edits:
   - app/views/layouts/application.html.erb
   - app/views/layouts/doorkeeper/application.html.erb
   - app/views/layouts/shared/_footer.html.erb
+  - app/views/pages/dashboard/_balance_sheet.html.erb
   - app/views/settings/_settings_nav.html.erb
+  - app/views/settings/hostings/_provider_selection.html.erb
   - app/views/users/_user_menu.html.erb
   - config/routes.rb
   - mobile/README.md
@@ -49,6 +57,7 @@ upstream_edits:
   - test/controllers/settings/providers_controller_test.rb
   - test/controllers/subscriptions_controller_test.rb
   - test/jobs/deliver_insight_notification_job_test.rb
+  - test/models/exchange_rate_test.rb
   - test/models/family/auto_categorize_transactions_test.rb
   - test/models/push_notification_test_test.rb
   - test/models/user_test.rb

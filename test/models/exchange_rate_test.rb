@@ -83,7 +83,7 @@ class ExchangeRateTest < ActiveSupport::TestCase
   end
 
   test "does not reuse cached rate outside lookback window" do
-    old_date = (ExchangeRate::NEAREST_RATE_LOOKBACK_DAYS + 1).days.ago.to_date
+    old_date = (Fork::Fx::MAX_CARRY_DAYS + 1).days.ago.to_date
     ExchangeRate.create!(from_currency: "USD", to_currency: "JPY", date: old_date, rate: 140.0)
 
     provider_response = provider_success_response(

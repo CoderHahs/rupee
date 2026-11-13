@@ -30,6 +30,11 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `README.md`                                                | A notice at the top: based on Maybe Finance and Sure, not affiliated, AGPLv3 (R22.5) | No         |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
+| `app/models/exchange_rate/importer.rb`                     | Writes `source` and `observed_on` on every row, gapfilled and inverse rows included, and re-fetches filled rows dated today or yesterday (R4.5, R4.8) | Yes |
+| `app/models/provider/registry.rb`, `app/views/settings/hostings/_provider_selection.html.erb` | Register `bank_of_canada` and `fx_router`; the picker lists the router (R4.4) | Yes |
+| `app/models/concerns/accountable.rb`, `app/models/investment_statement.rb`, `app/controllers/reports_controller.rb`, `app/models/balance_sheet/account_totals.rb` | A currency with no rate contributes 0 instead of a rate of 1 (R4.6) | Yes |
+| `app/views/pages/dashboard/_balance_sheet.html.erb`        | Foreign accounts show the converted amount through `fork/fx_amount`; the net-worth-by-currency section (R4.8, R4.10) | No |
+| `test/models/exchange_rate_test.rb`                        | The lookback test uses the fork's 7-day window instead of 5                  | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
 | `test/models/family/auto_categorize_transactions_test.rb`  | Its new family turns the household AI switch on                              | No                 |
 
@@ -60,6 +65,10 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
+| `app/models/fork/fx.rb`, `fx_quote.rb`, `request_fx.rb`, `sourced_rate.rb`, `net_worth_by_currency.rb`, `transfer_fx_detail.rb`; `app/models/concerns/fork/exchange_rate_lookup.rb`, `transfer_extension.rb` | Exchange-rate lookup with carry and exclusion, prepended to `ExchangeRate`'s singleton class (so `provided.rb` stays unedited); the `Transfer` extension writing `transfer_fx_details` |
+| `app/models/provider/bank_of_canada.rb`, `fx_router.rb` | Valet provider and the router, selected with `EXCHANGE_RATE_PROVIDER=fx_router` (D9) |
+| `app/views/fork/_fx_amount.html.erb`, `_fx_banners.html.erb`, `_net_worth_by_currency.html.erb`, `app/helpers/fork/fx_helper.rb`, `config/fork/locales/fx.en.yml` | Converted-amount marker, rate banners and the net-worth section |
+| `lib/tasks/fork_fx.rake`, `test/network/`, `.github/workflows/fork-nightly.yml` | `fork:fx_backfill`, `fork:fx_check_invariants`, and the nightly Valet series check |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
 

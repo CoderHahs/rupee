@@ -562,7 +562,7 @@ class ReportsController < ApplicationController
       holding_rates = ExchangeRate.rates_for(foreign_holding_currencies, to: currency, date: Date.current)
       convert_current = ->(amount, from) {
         numeric = to_numeric.call(amount)
-        from == currency ? numeric : numeric * (holding_rates[from] || 1)
+        from == currency ? numeric : numeric * (holding_rates[from] || 0) # no rate: left out (Rupee design §4.6)
       }
 
       # Realized gains are locked at trade time, so convert each at its own
@@ -584,7 +584,7 @@ class ReportsController < ApplicationController
       end
       convert_trade = ->(amount, from, date) {
         numeric = to_numeric.call(amount)
-        from == currency ? numeric : numeric * (rates_by_trade_date.dig(date, from) || 1)
+        from == currency ? numeric : numeric * (rates_by_trade_date.dig(date, from) || 0)
       }
 
       # Build metrics per treatment

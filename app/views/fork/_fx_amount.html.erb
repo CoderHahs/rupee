@@ -1,0 +1,12 @@
+<%# locals: (money:, native: nil, quote: nil) %>
+<%# A converted amount, marked when its rate was carried; hover or tap shows the native amount, rate, source and observation date (design §4.6, R4.8). %>
+<% if quote.nil? %>
+  <span class="text-secondary" title="<%= t("fork.fx.not_converted_hint") %>"><%= t("fork.fx.not_converted") %></span>
+<% else %>
+  <span title="<%= fork_fx_details(native, quote) %>" data-fx-carry-days="<%= quote.carry_days %>">
+    <%= money.format(precision: 0) %>
+    <% if quote.carried? %>
+      <span class="text-secondary" aria-label="<%= t("fork.fx.carried", count: quote.carry_days) %>"><%= icon("clock", size: "xs", color: "current") %></span>
+    <% end %>
+  </span>
+<% end %>

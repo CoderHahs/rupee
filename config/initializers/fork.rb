@@ -30,6 +30,10 @@ end
 Rails.application.config.to_prepare do
   Family.include(Fork::FamilyExtension)
 
+  # Exchange-rate lookups with observation dates and no fallback rate of 1 (design §4.6).
+  ExchangeRate.singleton_class.prepend(Fork::ExchangeRateLookup)
+  Transfer.include(Fork::TransferExtension)
+
   # The household AI switch (design §4.10).
   Family.prepend(Fork::FamilyAiGate)
   User.prepend(Fork::UserAiGate)

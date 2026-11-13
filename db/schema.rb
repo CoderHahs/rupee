@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_060100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -828,7 +828,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.datetime "created_at", null: false
     t.date "date", null: false
     t.string "from_currency", null: false
+    t.date "observed_on"
     t.decimal "rate", null: false
+    t.string "source"
     t.string "to_currency", null: false
     t.datetime "updated_at", null: false
     t.index ["from_currency", "to_currency", "date"], name: "index_exchange_rates_on_base_converted_date_unique", unique: true
@@ -2770,6 +2772,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.index ["transfer_id"], name: "index_transactions_on_transfer_id"
   end
 
+  create_table "transfer_fx_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "implied_rate", precision: 20, scale: 10, null: false
+    t.decimal "inflow_amount", precision: 19, scale: 4, null: false
+    t.string "inflow_currency", null: false
+    t.decimal "outflow_amount", precision: 19, scale: 4, null: false
+    t.string "outflow_currency", null: false
+    t.date "reference_observed_on"
+    t.decimal "reference_rate", precision: 20, scale: 10
+    t.string "reference_source"
+    t.decimal "spread_bps", precision: 9, scale: 1
+    t.uuid "transfer_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["transfer_id"], name: "index_transfer_fx_details_on_transfer_id", unique: true
+  end
+
   create_table "transfers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "amount", precision: 19, scale: 4, default: "0.0", null: false
     t.datetime "created_at", null: false
@@ -3120,6 +3138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   add_foreign_key "transactions", "categories", on_delete: :nullify
   add_foreign_key "transactions", "merchants"
   add_foreign_key "transactions", "transfers"
+  add_foreign_key "transfer_fx_details", "transfers", on_delete: :cascade
   add_foreign_key "transfers", "transactions", column: "inflow_transaction_id", on_delete: :cascade
   add_foreign_key "transfers", "transactions", column: "outflow_transaction_id", on_delete: :cascade
   add_foreign_key "up_accounts", "up_items"

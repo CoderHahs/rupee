@@ -96,6 +96,12 @@
 
                         <div class="w-24 shrink-0">
                           <p class="privacy-sensitive"><%= format_money(account.balance_money, precision: 0) %></p>
+                          <% if account.currency != Current.family.currency %>
+                            <p class="text-xs text-secondary privacy-sensitive">
+                              <% quote = fork_fx_quote(account.currency) %>
+                              <%= render "fork/fx_amount", money: (quote && Money.new(account.balance * quote.rate, Current.family.currency)), native: account.balance_money, quote: quote %>
+                            </p>
+                          <% end %>
                         </div>
                       </div>
                     </div>
@@ -131,6 +137,8 @@
     </div>
   <% end %>
 </div>
+
+<%= render "fork/net_worth_by_currency", family: Current.family %>
 
 <%# Custom style for hiding ruler when details are open %>
 <style>

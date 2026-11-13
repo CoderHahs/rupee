@@ -25,7 +25,8 @@ class ExchangeRate::Importer
       return
     end
 
-    prev_rate_value = start_rate_value
+    prev_observation = start_observation
+    prev_rate_value = prev_observation&.rate
 
     # Always find the earliest valid provider rate for pair metadata tracking.
     # record_first_provider_rate_on's atomic guard prevents moving the date forward.
@@ -42,6 +43,7 @@ class ExchangeRate::Importer
         "advancing gapfill start to earliest valid provider date #{earliest_valid_provider_date}"
       )
       prev_rate_value = earliest_rate.rate
+      prev_observation = observation_from_provider(earliest_rate)
       loop_start_date = earliest_valid_provider_date
     end
 
@@ -58,21 +60,28 @@ class ExchangeRate::Importer
       db_rate_value = db_rates[date]&.rate
       provider_rate_value = provider_rates[date]&.rate
 
-      chosen_rate = if provider_rate_value.present? && provider_rate_value.to_f > 0
-        provider_rate_value
+      # Each row records the observation it carries: an observed row its own
+      # date and source, a stored row its stored values, and a filled row the
+      # observation carried forward (design §4.6).
+      observation = if provider_rate_value.present? && provider_rate_value.to_f > 0
+        observation_from_provider(provider_rates[date])
       elsif db_rate_value.present? && db_rate_value.to_f > 0
-        db_rate_value
+        observation_from_row(db_rates[date])
       else
-        prev_rate_value
+        prev_observation
       end
+      chosen_rate = observation.rate
 
       prev_rate_value = chosen_rate
+      prev_observation = observation
 
       {
         from_currency: from,
         to_currency: to,
         date: date,
-        rate: chosen_rate
+        rate: chosen_rate,
+        observed_on: observation.observed_on,
+        source: observation.source
       }
     end
 
@@ -87,7 +96,9 @@ class ExchangeRate::Importer
         from_currency: row[:to_currency],
         to_currency: row[:from_currency],
         date: row[:date],
-        rate: (BigDecimal("1") / BigDecimal(row[:rate].to_s)).round(12)
+        rate: (BigDecimal("1") / BigDecimal(row[:rate].to_s)).round(12),
+        observed_on: row[:observed_on],
+        source: row[:source]
       }
     end
 
@@ -105,8 +116,23 @@ class ExchangeRate::Importer
     end
   end
 
+  # A rate with the day it was observed and the source that observed it.
+  Observation = Data.define(:rate, :observed_on, :source)
+
   private
     attr_reader :exchange_rate_provider, :from, :to, :start_date, :end_date, :clear_cache
+
+    def observation_from_provider(rate)
+      Observation.new(
+        rate: rate.rate,
+        observed_on: rate.date,
+        source: (rate.source if rate.respond_to?(:source)).presence || current_provider_name
+      )
+    end
+
+    def observation_from_row(row)
+      Observation.new(rate: row.rate, observed_on: row.observed_on || row.date, source: row.source)
+    end
 
     # Resolves the provider name the same way as ExchangeRate::Provided.provider:
     # ENV takes precedence over the DB Setting to stay consistent in env-configured deployments.
@@ -132,28 +158,28 @@ class ExchangeRate::Importer
       total_upsert_count
     end
 
-    def start_rate_value
+    def start_observation
       if fill_start_date == start_date
-        provider_rate_value = latest_valid_provider_rate(before_or_on: start_date)
-        db_rate_value = db_rates[start_date]&.rate
+        provider_rate = latest_valid_provider_rate(before_or_on: start_date)
+        db_rate = db_rates[start_date]
 
-        return provider_rate_value if provider_rate_value.present?
-        return db_rate_value if db_rate_value.present? && db_rate_value.to_f > 0
+        return observation_from_provider(provider_rate) if provider_rate.present?
+        return observation_from_row(db_rate) if db_rate&.rate.present? && db_rate.rate.to_f > 0
         return nil
       end
 
       cutoff_date = fill_start_date
 
-      provider_rate_value = latest_valid_provider_rate(before: cutoff_date)
-      return provider_rate_value if provider_rate_value.present?
+      provider_rate = latest_valid_provider_rate(before: cutoff_date)
+      return observation_from_provider(provider_rate) if provider_rate.present?
 
-      ExchangeRate
+      row = ExchangeRate
         .where(from_currency: from, to_currency: to)
         .where("date < ?", cutoff_date)
         .where("rate > 0")
         .order(date: :desc)
-        .limit(1)
-        .pick(:rate)
+        .first
+      row && observation_from_row(row)
     end
 
     # Scans provider_rates for the most recent entry with a positive rate,
@@ -164,7 +190,7 @@ class ExchangeRate::Importer
 
       provider_rates
         .select { |date, r| date.send(comparator, cutoff) && r.rate.present? && r.rate.to_f > 0 }
-        .max_by { |date, _| date }&.last&.rate
+        .max_by { |date, _| date }&.last
     end
 
     def clamped_start_date
@@ -203,7 +229,7 @@ class ExchangeRate::Importer
     def effective_start_date
       return start_date if clear_cache
 
-      (clamped_start_date..end_date).detect { |d| !db_rates.key?(d) } || end_date
+      (clamped_start_date..end_date).detect { |d| !db_rates.key?(d) || refetch?(db_rates[d]) } || end_date
     end
 
     def provider_rates
@@ -239,7 +265,9 @@ class ExchangeRate::Importer
           from_currency: to,
           to_currency: from,
           date: rate.date,
-          rate: (BigDecimal("1") / BigDecimal(rate.rate.to_s)).round(12)
+          rate: (BigDecimal("1") / BigDecimal(rate.rate.to_s)).round(12),
+          observed_on: rate.observed_on || rate.date,
+          source: rate.source
         }
       end
 
@@ -247,7 +275,20 @@ class ExchangeRate::Importer
     end
 
     def all_rates_exist?
-      db_count == expected_count
+      db_count == expected_count && !recent_filled_rates?
+    end
+
+    # A filled row dated on the end date or the day before is re-fetched until
+    # the provider publishes the rate, which ends the frozen carry (design §4.6).
+    def refetch?(row)
+      row.date >= end_date - 1 && row.observed_on.present? && row.observed_on < row.date
+    end
+
+    def recent_filled_rates?
+      ExchangeRate
+        .where(from_currency: from, to_currency: to, date: (end_date - 1)..end_date)
+        .where("observed_on < date")
+        .exists?
     end
 
     def expected_count
