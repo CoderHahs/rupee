@@ -80,15 +80,17 @@ class Fork::Liabilities::PaymentMatcher
     def payment?(entry)
       transaction = entry.entryable
       return true if PAYMENT_KINDS.include?(transaction.kind)
-      return true if PFC_PAYMENTS.include?(pfc_detailed(transaction))
+      return true if PFC_PAYMENTS.include?(pfc_detailed(entry))
 
       transfer = Transfer.find_by(inflow_transaction_id: transaction.id)
       transfer.present? && PAYMENT_KINDS.include?(transfer.outflow_transaction&.kind)
     end
 
-    # Plaid's detailed personal finance category, as the entry processor keeps it.
-    def pfc_detailed(transaction)
-      transaction.extra.to_h.dig("plaid", "personal_finance_category", "detailed")
+    # Plaid's detailed personal finance category, from the Task 4 signals
+    # (`extra["plaid"]["pfc_detailed"]`), or the raw category when only that is stored.
+    def pfc_detailed(entry)
+      CardBenefits::TransactionSignals.for(entry).pfc_detailed ||
+        entry.entryable.extra.to_h.dig("plaid", "personal_finance_category", "detailed")
     end
 
     def pending?(entry)
