@@ -6,3 +6,13 @@ scope :settings, as: :settings do
   resource :household, only: %i[show update], controller: "fork/household_settings"
   resource :household_ai, path: "household/ai", only: %i[show update destroy], controller: "fork/household_ais"
 end
+
+resources :connections, only: :index, controller: "fork/connections" do
+  member do
+    post :keep
+  end
+end
+
+resources :accounts, only: [] do
+  resources :liability_statements, only: %i[index new create edit update destroy], controller: "fork/liability_statements"
+end

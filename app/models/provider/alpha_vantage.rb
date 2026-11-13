@@ -25,6 +25,7 @@ class Provider::AlphaVantage < Provider
     "XLON" => ".LON",
     "XETR" => ".DEX",
     "XTSE" => ".TRT",
+    "XTSX" => ".TRV",
     "XPAR" => ".PAR",
     "XAMS" => ".AMS",
     "XSWX" => ".SWX",
@@ -301,7 +302,7 @@ class Provider::AlphaVantage < Provider
       when "LON" then "GBP"
       when "DEX", "FRK" then "EUR"
       when "PAR", "AMS", "MIL", "BME", "HEL" then "EUR"
-      when "TRT" then "CAD"
+      when "TRT", "TRV" then "CAD"
       when "SWX" then "CHF"
       when "HKG" then "HKD"
       when "ASX" then "AUD"

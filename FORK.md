@@ -16,21 +16,36 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
 | `app/models/assistant/configurable.rb`                     | Both system prompts use `config.x.product_name` instead of "Sure" (R13.5)    | Yes                |
 | `app/models/assistant/function/get_account_statement.rb`   | Tool description says "the app" instead of "Sure"                            | Yes                |
-| `app/models/provider/plaid.rb`                             | Plaid Link's `client_name` is the product name instead of "Sure Finances"    | Yes                |
+| `app/models/provider/plaid.rb`                             | Plaid Link's `client_name` is the product name instead of "Sure Finances"; transaction sync sends the pinned PFC version (D6) | Yes                |
+| `.github/workflows/ci.yml` | Jobs run on `ubuntu-24.04`: `ubuntu-latest` became 26.04, which the pinned `ruby/setup-ruby` treats as self-hosted and cannot install Ruby on | Yes |
+| `Gemfile`, `Gemfile.lock`                                  | `plaid` pinned to `~> 51.0` (was 41.0.0) for MCC and the PFC version option (R6.4) | Yes |
+| `app/models/plaid_entry/processor.rb`                      | `plaid_extra` adds MCC, PFC and `authorized_date` via `Fork::PlaidSignals` (R6.4) | Yes |
 | `app/models/user.rb`                                       | The authenticator-app issuer is the product name instead of "Sure Finances"  | Yes                |
 | `app/controllers/concerns/webauthn_relying_party.rb`       | The passkey prompt shows the product name instead of "Sure"                  | Yes                |
 | `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
 | `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
 | `config/routes.rb`                                         | `draw :fork` loads `config/routes/fork.rb` (R22.2)                           | No                 |
+| `app/views/accounts/new/_method_selector.html.erb`        | Renders `fork/chooser_note`: the Item budget and the brokerage-first sentence (R2.7) | No |
 | `app/views/layouts/application.html.erb`                   | Renders `fork/banners` under the system alerts (R18.10)                      | No                 |
 | `app/views/settings/_settings_nav.html.erb`, `app/helpers/settings_helper.rb` | Settings > Household link for admins (R18.10)            | No                 |
 | The 10 LLM call sites in `bills_helper.rb`, `family_merchants_controller.rb`, `provider_merchant/enhancer.rb`, `pdf_import.rb` (2), `assistant/function/import_bank_statement.rb`, `insight/body_writer.rb`, `recurring_transaction/ai_setup_suggester.rb`, `family/auto_merchant_detector.rb`, `rule/registry/transaction_resource.rb` | Ask `Family#permitted_llm_provider` instead of the registry, so the household AI switch covers them (R13.3) | Yes |
 | `app/views/layouts/shared/_footer.html.erb`                | Renders `fork/source_notice`, the AGPLv3 source offer for the running commit (R22.4) | No |
 | `app/views/users/_user_menu.html.erb`                      | The commit link points at the fork's source instead of upstream's (R22.4)    | No                 |
+| `app/models/provider/alpha_vantage.rb`, `app/models/provider/eodhd.rb` | Map XTSX (TSX Venture) to `.TRV` and `V`, with CAD (R5.4) | Yes |
+| `app/models/security/price/importer.rb`                    | Carries and writes `observed_on` on every row (R5.5)                         | Yes                |
+| `app/views/holdings/show.html.erb`, `holdings/sync_prices.turbo_stream.erb`, `trades/_header.html.erb`, `transactions/convert_to_trade.html.erb` | Render `fork/price_label` (R5.5) | No |
+| `test/models/security/health_checker_test.rb`              | Probe is the 7-day window and prices are kept when offline                   | No                 |
 | `README.md`                                                | A notice at the top: based on Maybe Finance and Sure, not affiliated, AGPLv3 (R22.5) | No         |
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
+| `app/models/exchange_rate/importer.rb`                     | Writes `source` and `observed_on` on every row, gapfilled and inverse rows included, and re-fetches filled rows dated today or yesterday (R4.5, R4.8) | Yes |
+| `app/models/provider/registry.rb`, `app/views/settings/hostings/_provider_selection.html.erb` | Register `bank_of_canada` and `fx_router`; the picker lists the router (R4.4) | Yes |
+| `app/models/concerns/accountable.rb`, `app/models/investment_statement.rb`, `app/controllers/reports_controller.rb`, `app/models/balance_sheet/account_totals.rb` | A currency with no rate contributes 0 instead of a rate of 1 (R4.6) | Yes |
+| `app/views/pages/dashboard/_balance_sheet.html.erb`        | Foreign accounts show the converted amount through `fork/fx_amount`; the net-worth-by-currency section (R4.8, R4.10) | No |
+| `test/models/exchange_rate_test.rb`, `test/models/investment_statement_test.rb` | The lookback test uses the 7-day window; the missing-rate test expects the account left out, not a rate of 1 | No |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
+| `app/models/plaid_account/liabilities/{credit,mortgage,student_loan}_processor.rb` | Write through `enrich_attributes`, which honours locks; the credit processor takes `purchase_apr` (finding 3, R9.2) | Yes |
+| `test/models/plaid_account/liabilities/credit_processor_test.rb` | Payload carries `apr_type`; new purchase APR and lock cases                  | No                 |
 | `test/models/family/auto_categorize_transactions_test.rb`  | Its new family turns the household AI switch on                              | No                 |
 
 ### Files the fork adds
@@ -56,10 +71,23 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `app/models/concerns/fork/family_ai_gate.rb`, `user_ai_gate.rb`, `app/controllers/concerns/fork/mcp_ai_gate.rb`, `imports_ai_gate.rb` | The household AI switch, prepended to `Family`, `User`, `McpController` and `ImportsController` in `fork.rb` (R13.3) |
+| `app/models/fork/plaid_item_budget.rb`, `plaid_item_ledger_entry.rb`, `concerns/fork/plaid_item_extension.rb` | The Item ledger and cap guard; `syncable` excludes revoked Items (design §4.2, R2.5) |
+| `app/controllers/concerns/fork/plaid_items_gate.rb`, `app/views/fork/plaid_item_budgets/` | Guards `PlaidItemsController#new`, never `edit` (R2.6) |
+| `app/models/concerns/fork/plaid_webhook_extension.rb`, `revoked_account_gate.rb`, `app/models/fork/connection_health.rb`, `connection_events.rb`, `plaid_health_poll.rb`, `app/jobs/fork/plaid_health_poll_job.rb` | Connection health webhooks, statuses and the poller (design §4.3). Events are `ActiveSupport::Notifications` until task 17 |
+| `app/models/concerns/fork/connection_chooser_order.rb` | Brokerage connectors first in the account-add chooser (R2.7) |
+| `app/controllers/fork/connections_controller.rb`, `app/views/fork/connections/` | `/connections` and the next-action buttons used by the banners |
 | `deploy/`                     | The production stack: compose file, Caddy allowlist, env template, restic backups and the runbook (design §3.1, §7) |
 | `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
+| `app/models/fork/liability_statement.rb`, `app/models/fork/liabilities/`, `app/models/concerns/fork/liability_processing.rb`, `recurring_occurrence_extension.rb`, `account_extension.rb`, `app/jobs/fork/liability_payment_match_job.rb`, `app/controllers/fork/liability_statements_controller.rb`, `app/views/fork/liability_statements/` | Liability statements, the Recorder, BillLinker and PaymentMatcher, and the `PlaidAccount::Processor` and `RecurringOccurrence` prepends (design §4.5) |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
+| `app/models/fork/plaid_signals.rb`, `plaid_signals_backfill.rb`, `app/jobs/fork/plaid_signals_backfill_job.rb`, `app/models/card_benefits/transaction_signals.rb` | Plaid signal keys, the one-off backfill with its fill-rate report, and the reader card benefits use (design §4.4) |
+| `app/models/concerns/fork/tsx_provider_assignment.rb`, `price_observation.rb`, `current_price.rb`, `details_throttle.rb`, `health_check_policy.rb`, `app/models/fork/price_quote.rb`, `price_observed_on_backfill.rb` | Security prices (design §4.7): TSX provider assignment (`FORK_TSX_PRICE_PROVIDER`, alpha_vantage or eodhd), `observed_on`, last known price, details throttle, health check policy. Applied in `fork.rb`; `bin/rails fork:backfill_price_observed_on` |
+| `app/views/fork/_price_label.html.erb`, `app/helpers/fork/price_label_helper.rb` | The last price with its observation date |
+| `app/models/fork/fx.rb`, `fx_quote.rb`, `request_fx.rb`, `sourced_rate.rb`, `net_worth_by_currency.rb`, `transfer_fx_detail.rb`; `app/models/concerns/fork/exchange_rate_lookup.rb`, `transfer_extension.rb` | Exchange-rate lookup with carry and exclusion, prepended to `ExchangeRate`'s singleton class (so `provided.rb` stays unedited); the `Transfer` extension writing `transfer_fx_details` |
+| `app/models/provider/bank_of_canada.rb`, `fx_router.rb` | Valet provider and the router, selected with `EXCHANGE_RATE_PROVIDER=fx_router` (D9) |
+| `app/views/fork/_fx_amount.html.erb`, `_fx_banners.html.erb`, `_net_worth_by_currency.html.erb`, `app/helpers/fork/fx_helper.rb`, `config/fork/locales/fx.en.yml` | Converted-amount marker, rate banners and the net-worth section |
+| `lib/tasks/fork_fx.rake`, `test/network/`, `.github/workflows/fork-nightly.yml` | `fork:fx_backfill`, `fork:fx_check_invariants`, and the nightly Valet series check |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
 

@@ -1,0 +1,28 @@
+<%# locals: (family:) %>
+<%# Assets minus liabilities in each native currency, then the converted amount (design §4.6, R4.10). %>
+<% breakdown = Fork::NetWorthByCurrency.new(family) %>
+<% if breakdown.multi_currency? %>
+  <div class="space-y-2 px-4" id="net-worth-by-currency">
+    <h2 class="text-lg font-medium"><%= t("fork.fx.net_worth.title") %></h2>
+    <div class="bg-container-inset rounded-xl p-1 text-sm font-medium">
+      <% breakdown.rows.each do |row| %>
+        <div class="px-4 py-3 flex items-center justify-between gap-2">
+          <p><%= row.currency %></p>
+          <div class="text-right privacy-sensitive">
+            <p><%= row.native.format(precision: 0) %></p>
+            <% if row.currency != family.currency %>
+              <p class="text-xs text-secondary">
+                <% if row.converted? %>
+                  <%= t("fork.fx.net_worth.converted", currency: family.currency) %>:
+                  <%= render "fork/fx_amount", money: row.converted, native: row.native, quote: row.quote %>
+                <% else %>
+                  <%= render "fork/fx_amount", money: nil, quote: nil %>
+                <% end %>
+              </p>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

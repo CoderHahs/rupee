@@ -1,0 +1,72 @@
+<%= content_for :page_title, t(".page_title", account: @account.name) %>
+
+<div class="space-y-4">
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-xl font-medium text-primary"><%= t(".title", account: @account.name) %></h1>
+    <%= render DS::Link.new(text: t(".add"), href: new_account_liability_statement_path(@account), variant: :primary, icon: "plus") %>
+  </div>
+
+  <% if @statements.empty? %>
+    <%= render DS::EmptyState.new(icon: "receipt", title: t(".empty_title"), description: t(".empty_description")) %>
+  <% else %>
+    <% @statements.each do |statement| %>
+      <%= render DS::Card.new do %>
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <p class="text-primary font-medium">
+              <%= statement.issued_on ? t(".issued", date: l(statement.issued_on, format: :long)) : t(".due_only", date: l(statement.due_on, format: :long)) %>
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <%= render DS::Pill.new(label: t(".source_#{statement.source}"), tone: :neutral, marker: false) %>
+              <% if statement.is_overdue? %>
+                <%= render DS::Pill.new(label: t(".overdue"), tone: :error, marker: false) %>
+              <% end %>
+              <% occurrence = statement.recurring_occurrence %>
+              <% if occurrence&.minimum_paid_balance_carried? %>
+                <%= render DS::Pill.new(label: t(".minimum_paid"), tone: :info, marker: false) %>
+              <% end %>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <%= render DS::Link.new(text: t(".edit"), href: edit_account_liability_statement_path(@account, statement), variant: :secondary, size: :sm) %>
+            <%= render DS::Link.new(text: t(".delete"), href: account_liability_statement_path(@account, statement), method: :delete, variant: :destructive, size: :sm,
+                  data: { turbo_confirm: t(".delete_confirm") }) %>
+          </div>
+        </div>
+
+        <dl class="mt-4 space-y-2">
+          <% { due_on: :date, statement_balance: :money, minimum_due: :money, last_payment_amount: :money, last_payment_on: :date }.each do |field, kind| %>
+            <%= render DS::DetailRow.new(label: t(".fields.#{field}")) do |row| %>
+              <% row.with_value do %>
+                <% value = statement.public_send(field) %>
+                <% if statement.missing?(field) || value.nil? %>
+                  <span class="text-secondary"><%= t(".not_provided") %></span>
+                <% elsif kind == :date %>
+                  <%= l(value, format: :long) %>
+                <% else %>
+                  <%= statement.public_send("#{field}_money").format %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+          <%= render DS::DetailRow.new(label: t(".fields.aprs")) do |row| %>
+            <% row.with_value do %>
+              <% if statement.aprs.blank? %>
+                <span class="text-secondary"><%= t(".not_provided") %></span>
+              <% else %>
+                <%= statement.aprs.map { |apr| "#{apr['apr_type'].to_s.humanize}: #{apr['apr_percentage']}%" }.join(", ") %>
+              <% end %>
+            <% end %>
+          <% end %>
+        </dl>
+
+        <% pending = Fork::Liabilities::BillLinker.new(statement).pending_action %>
+        <% if pending %>
+          <div class="mt-4">
+            <%= render DS::Alert.new(variant: :warning, message: t(".pending.#{pending}")) %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

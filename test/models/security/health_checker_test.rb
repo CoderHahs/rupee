@@ -66,11 +66,12 @@ class Security::HealthCheckerTest < ActiveSupport::TestCase
   test "offline security with no health check that fails stays offline" do
     hc = Security::HealthChecker.new(@new_offline_security)
 
-    @provider.expects(:fetch_security_price)
+    @provider.expects(:fetch_security_prices)
       .with(
         symbol: @new_offline_security.ticker,
         exchange_operating_mic: @new_offline_security.exchange_operating_mic,
-        date: Date.current
+        start_date: Date.current - 7.days,
+        end_date: Date.current
       )
       .returns(
         provider_error_response(StandardError.new("No prices found"))
@@ -83,7 +84,7 @@ class Security::HealthCheckerTest < ActiveSupport::TestCase
     assert @new_offline_security.offline?
   end
 
-  test "after enough consecutive health check failures, security goes offline and prices are deleted" do
+  test "after enough consecutive health check failures, security goes offline and prices are kept" do
     # Create one test price
     Security::Price.create!(
       security: @due_for_check_security,
@@ -94,11 +95,12 @@ class Security::HealthCheckerTest < ActiveSupport::TestCase
 
     hc = Security::HealthChecker.new(@due_for_check_security)
 
-    @provider.expects(:fetch_security_price)
+    @provider.expects(:fetch_security_prices)
       .with(
         symbol: @due_for_check_security.ticker,
         exchange_operating_mic: @due_for_check_security.exchange_operating_mic,
-        date: Date.current
+        start_date: Date.current - 7.days,
+        end_date: Date.current
       )
       .returns(provider_error_response(StandardError.new("No prices found")))
       .times(Security::HealthChecker::MAX_CONSECUTIVE_FAILURES + 1)
@@ -113,17 +115,18 @@ class Security::HealthCheckerTest < ActiveSupport::TestCase
     # We've now exceeded the max consecutive failures, so the security should be marked offline
     hc.run_check
     assert @due_for_check_security.offline?
-    assert_equal 0, @due_for_check_security.prices.count
+    assert_equal 1, @due_for_check_security.prices.count
   end
 
   test "failure incrementor increases for each health check failure" do
     hc = Security::HealthChecker.new(@due_for_check_security)
 
-    @provider.expects(:fetch_security_price)
+    @provider.expects(:fetch_security_prices)
       .with(
         symbol: @due_for_check_security.ticker,
         exchange_operating_mic: @due_for_check_security.exchange_operating_mic,
-        date: Date.current
+        start_date: Date.current - 7.days,
+        end_date: Date.current
       )
       .returns(provider_error_response(StandardError.new("No prices found")))
       .twice
@@ -138,13 +141,14 @@ class Security::HealthCheckerTest < ActiveSupport::TestCase
   test "failure incrementor resets to 0 when health check succeeds" do
     hc = Security::HealthChecker.new(@offline_never_checked_with_prices)
 
-    @provider.expects(:fetch_security_price)
+    @provider.expects(:fetch_security_prices)
       .with(
         symbol: @offline_never_checked_with_prices.ticker,
         exchange_operating_mic: @offline_never_checked_with_prices.exchange_operating_mic,
-        date: Date.current
+        start_date: Date.current - 7.days,
+        end_date: Date.current
       )
-      .returns(provider_success_response(OpenStruct.new(price: 100, date: Date.current, currency: "USD")))
+      .returns(provider_success_response([ OpenStruct.new(price: 100, date: Date.current, currency: "USD") ]))
       .once
 
     assert @offline_never_checked_with_prices.offline?

@@ -1,0 +1,60 @@
+name: Fork nightly network tests
+
+# Outside WebMock, on a schedule: Valet still publishes the series the FX
+# router maps, and Frankfurter answers (design §8).
+on:
+  schedule:
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  network:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    env:
+      FORK_NETWORK_TESTS: "1"
+      PLAID_CLIENT_ID: foo
+      PLAID_SECRET: bar
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432 # pipelock:ignore
+      REDIS_URL: redis://localhost:6379
+      RAILS_ENV: test
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips postgresql-client libpq-dev
+
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1.308.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Prepare the database
+        run: bin/rails db:create db:schema:load
+
+      - name: Run the network tests
+        run: bin/rails test test/network

@@ -6,9 +6,12 @@ class PlaidAccount::Liabilities::MortgageProcessor
   def process
     return unless mortgage_data.present?
 
-    account.loan.update!(
-      rate_type: mortgage_data.dig("interest_rate", "type"),
-      interest_rate: mortgage_data.dig("interest_rate", "percentage")
+    account.loan.enrich_attributes(
+      {
+        rate_type: mortgage_data.dig("interest_rate", "type"),
+        interest_rate: mortgage_data.dig("interest_rate", "percentage")
+      },
+      source: "plaid"
     )
   end
 

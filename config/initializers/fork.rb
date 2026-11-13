@@ -29,12 +29,34 @@ end
 # after each code reload in development.
 Rails.application.config.to_prepare do
   Family.include(Fork::FamilyExtension)
+  Account.include(Fork::AccountExtension)
+
+  # The Item budget and connection health (design §4.2, §4.3).
+  PlaidItem.include(Fork::PlaidItemExtension)
+  PlaidItem::WebhookProcessor.prepend(Fork::PlaidWebhookExtension)
+  PlaidAccount::Processor.prepend(Fork::RevokedAccountGate)
+  PlaidItemsController.prepend(Fork::PlaidItemsGate)
+  Provider::Factory.singleton_class.prepend(Fork::ConnectionChooserOrder)
+
+  # Exchange-rate lookups with observation dates and no fallback rate of 1 (design §4.6).
+  ExchangeRate.singleton_class.prepend(Fork::ExchangeRateLookup)
+  Transfer.include(Fork::TransferExtension)
 
   # The household AI switch (design §4.10).
   Family.prepend(Fork::FamilyAiGate)
   User.prepend(Fork::UserAiGate)
   McpController.prepend(Fork::McpAiGate)
   ImportsController.prepend(Fork::ImportsAiGate)
+
+  # Liabilities and card bills (design §4.5).
+  PlaidAccount::Processor.prepend(Fork::LiabilityProcessing)
+  RecurringOccurrence.prepend(Fork::RecurringOccurrenceExtension)
+  # Security prices (design §4.7).
+  Security::Resolver.prepend(Fork::TsxProviderAssignment)
+  Security::Price.include(Fork::PriceObservation)
+  Security.prepend(Fork::CurrentPrice)
+  Security.prepend(Fork::DetailsThrottle)
+  Security::HealthChecker.prepend(Fork::HealthCheckPolicy)
 end
 
 # Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.

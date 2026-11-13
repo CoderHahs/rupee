@@ -21,3 +21,19 @@
     </div>
   <% end %>
 <% end %>
+
+<%# Connections that need attention: one banner each, for whoever can act on it (design §4.3). %>
+<% if Current.user && Current.family %>
+  <% Fork::ConnectionHealth.attention_items(Current.family).select { |item, _| item.manageable_by?(Current.user) }.first(3).each do |item, status| %>
+    <div class="mx-auto w-full max-w-2xl mb-4">
+      <%= render DS::Alert.new(variant: (status == :new_accounts ? :info : :warning), title: t("fork.banners.connection.#{status}.title", name: item.name)) do %>
+        <p><%= t("fork.banners.connection.#{status}.body", name: item.name, date: (l((item.pending_disconnect_at || item.consent_expires_at).to_date, format: :long) if item.pending_disconnect_at || item.consent_expires_at), code: item.item_error_code) %></p>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <%= render "fork/connections/actions", item: item, status: status %>
+          <%= render DS::Link.new(text: t("fork.banners.connection.details"), href: connections_path, variant: :ghost, size: :sm) %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+<%= render "fork/fx_banners" %>

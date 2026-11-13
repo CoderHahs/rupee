@@ -24,6 +24,70 @@ en:
         and read bank statements, using an AI model you choose. Nothing is
         sent to a model until an admin agrees.
       ai_setup_action: Set up Rupee
+      connection:
+        details: All connections
+        revoked:
+          title: "%{name}: access was revoked"
+          body: You removed Rupee's access at the institution. Delete the synced data, or keep it as history.
+        pending_disconnect:
+          title: "%{name} will disconnect soon"
+          body: Reconnect before %{date} to keep syncing.
+        login_required:
+          title: "%{name} needs you to sign in again"
+          body: Syncing is paused until you reconnect.
+        consent_expiring:
+          title: "%{name}: consent is expiring"
+          body: Renew consent by %{date} to keep syncing.
+        new_accounts:
+          title: "%{name} has new accounts"
+          body: The institution reports accounts Rupee can add.
+        sync_error:
+          title: "%{name} had a sync error"
+          body: "Plaid reported %{code}."
+    connections:
+      not_allowed: You cannot manage that connection.
+      keep:
+        kept: Kept the accounts and history. Syncing stays off for that connection.
+      statuses:
+        healthy: Healthy
+        revoked: Revoked
+        pending_disconnect: Pending disconnect
+        login_required: Login required
+        consent_expiring: Consent expiring
+        new_accounts: New accounts
+        sync_error: Sync error
+      actions:
+        keep: Keep as history
+        delete: Delete data
+        delete_title: Delete this connection?
+        delete_body: This deletes the connection and its synced data.
+        reconnect: Reconnect
+        renew: Renew consent
+        add_accounts: Add accounts
+        retry: Retry sync
+      index:
+        title: Connections
+        budget: "%{used} of %{cap} Plaid Items used"
+        empty: No connections yet.
+        last_success: Last successful sync %{time} ago
+        never_synced: Not synced yet
+        consent_ends: Consent ends %{date}
+        disconnect_on: Disconnects %{date}
+    chooser_note:
+      used: "%{used} of %{cap} Plaid Items used"
+      reserved: Plaid Items are reserved for banks and cards. Use SnapTrade or Questrade for brokerage accounts.
+    plaid_item_budgets:
+      exhausted:
+        title: Plaid Item limit reached
+        used: "%{used} of %{cap} Plaid Items are used."
+        explanation: Plaid caps the Items this household can create, and a deleted Item still uses its slot, so no new Plaid connection can be started.
+        brokerage: Brokerage accounts can still be connected through SnapTrade or Questrade.
+        connections: See all connections
+    price_label:
+      none: No price yet
+      last_price: "Last price %{date}"
+      observed: "Observed %{date} (%{provider})"
+      unknown_provider: no provider
     mcp:
       ai_off: AI features are off for this household
     imports:
@@ -93,3 +157,55 @@ en:
         turned_on: Rupee is on.
       destroy:
         turned_off: Rupee is off.
+    liabilities:
+      bill_name: "%{name} payment"
+    liability_statements:
+      index:
+        page_title: "Statements for %{account}"
+        title: "Statements: %{account}"
+        add: Add a statement
+        empty_title: No statements yet
+        empty_description: Statements from your bank appear here after a sync. You can also add one by hand.
+        issued: "Issued %{date}"
+        due_only: "Due %{date}"
+        source_plaid: From your bank
+        source_manual: Entered by hand
+        overdue: Overdue
+        minimum_paid: Minimum paid, balance carried
+        edit: Edit
+        delete: Delete
+        delete_confirm: Delete this statement?
+        not_provided: Not provided by the institution
+        fields:
+          due_on: Due date
+          statement_balance: Statement balance
+          minimum_due: Minimum due
+          last_payment_amount: Last payment
+          last_payment_on: Last payment date
+          aprs: APRs
+        pending:
+          needs_funding_account: Choose the account this bill is paid from by editing the statement.
+          needs_currency: This card's bill is in another currency. Change the bill's currency to match the card.
+      new:
+        page_title: Add a statement
+      edit:
+        page_title: Edit statement
+      form:
+        invalid: The statement could not be saved.
+        issued_on: Issue date
+        due_on: Due date
+        statement_balance: Statement balance
+        minimum_due: Minimum due
+        last_payment_amount: Last payment amount
+        last_payment_on: Last payment date
+        is_overdue: Past due
+        funding_account: Paid from
+        funding_account_default: Use the bill's account
+        cancel: Cancel
+        save: Save statement
+      create:
+        created: Statement added.
+      update:
+        updated: Statement updated.
+      destroy:
+        destroyed: Statement deleted.

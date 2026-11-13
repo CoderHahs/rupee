@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -828,7 +828,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.datetime "created_at", null: false
     t.date "date", null: false
     t.string "from_currency", null: false
+    t.date "observed_on"
     t.decimal "rate", null: false
+    t.string "source"
     t.string "to_currency", null: false
     t.datetime "updated_at", null: false
     t.index ["from_currency", "to_currency", "date"], name: "index_exchange_rates_on_base_converted_date_unique", unique: true
@@ -1577,6 +1579,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.index ["status"], name: "index_kraken_items_on_status"
   end
 
+  create_table "liability_statements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.jsonb "aprs", default: [], null: false
+    t.datetime "created_at", null: false
+    t.string "currency", null: false
+    t.date "due_on"
+    t.text "fields_missing", default: [], null: false, array: true
+    t.boolean "is_overdue", default: false, null: false
+    t.date "issued_on"
+    t.decimal "last_payment_amount", precision: 19, scale: 4
+    t.date "last_payment_on"
+    t.decimal "minimum_due", precision: 19, scale: 4
+    t.uuid "recurring_occurrence_id"
+    t.string "source", default: "plaid", null: false
+    t.decimal "statement_balance", precision: 19, scale: 4
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "due_on"], name: "idx_liability_statements_account_due_on", unique: true, where: "(issued_on IS NULL)"
+    t.index ["account_id", "issued_on"], name: "idx_liability_statements_account_issued_on", unique: true, where: "(issued_on IS NOT NULL)"
+    t.index ["account_id"], name: "index_liability_statements_on_account_id"
+    t.index ["recurring_occurrence_id"], name: "index_liability_statements_on_recurring_occurrence_id"
+    t.check_constraint "issued_on IS NOT NULL OR due_on IS NOT NULL", name: "chk_liability_statements_dated"
+    t.check_constraint "source::text = ANY (ARRAY['plaid'::character varying::text, 'manual'::character varying::text])", name: "chk_liability_statements_source"
+  end
+
   create_table "llm_usages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "cache_creation_tokens"
     t.integer "cache_read_tokens"
@@ -1614,7 +1640,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.jsonb "variable_rate_schedule", default: {}, null: false
     t.check_constraint "down_payment IS NULL OR down_payment >= 0::numeric", name: "chk_loans_down_payment_non_negative"
     t.check_constraint "insurance_rate IS NULL OR insurance_rate >= 0::numeric", name: "chk_loans_insurance_rate_non_negative"
-    t.check_constraint "insurance_rate_type IS NULL OR (insurance_rate_type::text = ANY (ARRAY['level_term'::character varying, 'decreasing_life'::character varying]::text[]))", name: "chk_loans_insurance_rate_type"
+    t.check_constraint "insurance_rate_type IS NULL OR (insurance_rate_type::text = ANY (ARRAY['level_term'::character varying::text, 'decreasing_life'::character varying::text]))", name: "chk_loans_insurance_rate_type"
   end
 
   create_table "lunchflow_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1936,29 +1962,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.jsonb "raw_liabilities_payload", default: {}
     t.jsonb "raw_payload", default: {}
     t.jsonb "raw_transactions_payload", default: {}
+    t.datetime "revoked_at"
     t.datetime "updated_at", null: false
     t.index ["plaid_item_id", "plaid_id"], name: "index_plaid_accounts_on_item_and_plaid_id", unique: true
     t.index ["plaid_item_id"], name: "index_plaid_accounts_on_plaid_item_id"
+  end
+
+  create_table "plaid_item_ledger_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "environment", default: "production", null: false
+    t.uuid "family_id"
+    t.string "institution_id"
+    t.string "institution_name"
+    t.string "plaid_id", null: false
+    t.uuid "plaid_item_id"
+    t.datetime "removed_at"
+    t.index ["family_id"], name: "index_plaid_item_ledger_entries_on_family_id"
+    t.index ["plaid_id"], name: "index_plaid_item_ledger_entries_on_plaid_id", unique: true
+    t.index ["plaid_item_id"], name: "index_plaid_item_ledger_entries_on_plaid_item_id"
+    t.check_constraint "environment::text = ANY (ARRAY['sandbox'::character varying::text, 'production'::character varying::text])", name: "chk_plaid_item_ledger_entries_environment"
   end
 
   create_table "plaid_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token"
     t.string "available_products", default: [], array: true
     t.string "billed_products", default: [], array: true
+    t.datetime "consent_expires_at"
     t.datetime "created_at", null: false
     t.uuid "family_id", null: false
+    t.datetime "health_checked_at"
     t.string "institution_color"
     t.string "institution_id"
     t.string "institution_url"
+    t.string "item_error_code"
+    t.string "item_error_reason"
+    t.datetime "last_successful_update_at"
     t.string "name"
+    t.datetime "new_accounts_available_at"
     t.string "next_cursor"
     t.uuid "owner_id"
+    t.datetime "pending_disconnect_at"
+    t.string "pending_disconnect_reason"
     t.string "plaid_id", null: false
     t.string "plaid_region", default: "us", null: false
     t.jsonb "raw_institution_payload", default: {}
     t.jsonb "raw_payload", default: {}
+    t.datetime "revoked_at"
+    t.datetime "revoked_kept_at"
+    t.string "revoked_reason"
     t.boolean "scheduled_for_deletion", default: false
     t.string "status", default: "good", null: false
+    t.string "update_type"
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_plaid_items_on_family_id"
     t.index ["owner_id"], name: "index_plaid_items_on_owner_id"
@@ -2345,6 +2399,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.datetime "created_at", null: false
     t.string "currency", default: "USD", null: false
     t.date "date", null: false
+    t.date "observed_on"
     t.decimal "price", precision: 19, scale: 4, null: false
     t.boolean "provisional", default: false, null: false
     t.uuid "security_id"
@@ -2770,6 +2825,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
     t.index ["transfer_id"], name: "index_transactions_on_transfer_id"
   end
 
+  create_table "transfer_fx_details", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "implied_rate", precision: 20, scale: 10, null: false
+    t.decimal "inflow_amount", precision: 19, scale: 4, null: false
+    t.string "inflow_currency", null: false
+    t.decimal "outflow_amount", precision: 19, scale: 4, null: false
+    t.string "outflow_currency", null: false
+    t.date "reference_observed_on"
+    t.decimal "reference_rate", precision: 20, scale: 10
+    t.string "reference_source"
+    t.decimal "spread_bps", precision: 9, scale: 1
+    t.uuid "transfer_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["transfer_id"], name: "index_transfer_fx_details_on_transfer_id", unique: true
+  end
+
   create_table "transfers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "amount", precision: 19, scale: 4, default: "0.0", null: false
     t.datetime "created_at", null: false
@@ -3049,6 +3120,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   add_foreign_key "invitations", "users", column: "inviter_id"
   add_foreign_key "kraken_accounts", "kraken_items"
   add_foreign_key "kraken_items", "families"
+  add_foreign_key "liability_statements", "accounts", on_delete: :cascade
+  add_foreign_key "liability_statements", "recurring_occurrences", on_delete: :nullify
   add_foreign_key "llm_usages", "families"
   add_foreign_key "lunchflow_accounts", "lunchflow_items"
   add_foreign_key "lunchflow_items", "families"
@@ -3067,6 +3140,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   add_foreign_key "onchain_wallet_accounts", "onchain_wallet_items"
   add_foreign_key "onchain_wallet_items", "families"
   add_foreign_key "plaid_accounts", "plaid_items"
+  add_foreign_key "plaid_item_ledger_entries", "families", on_delete: :nullify
   add_foreign_key "plaid_items", "families"
   add_foreign_key "plaid_items", "users", column: "owner_id", on_delete: :nullify
   add_foreign_key "push_subscriptions", "users"
@@ -3120,6 +3194,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_210000) do
   add_foreign_key "transactions", "categories", on_delete: :nullify
   add_foreign_key "transactions", "merchants"
   add_foreign_key "transactions", "transfers"
+  add_foreign_key "transfer_fx_details", "transfers", on_delete: :cascade
   add_foreign_key "transfers", "transactions", column: "inflow_transaction_id", on_delete: :cascade
   add_foreign_key "transfers", "transactions", column: "outflow_transaction_id", on_delete: :cascade
   add_foreign_key "up_accounts", "up_items"

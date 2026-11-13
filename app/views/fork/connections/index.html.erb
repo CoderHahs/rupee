@@ -1,0 +1,43 @@
+<%= content_for :page_title, t(".title") %>
+
+<div class="mx-auto w-full max-w-4xl space-y-4">
+  <h1 class="text-xl font-medium text-primary"><%= t(".title") %></h1>
+
+  <%= render DS::Alert.new(variant: (@budget[:used] >= @budget[:cap] ? :warning : :info), message: t(".budget", used: @budget[:used], cap: @budget[:cap])) %>
+
+  <% if @rows.empty? %>
+    <p class="text-sm text-secondary"><%= t(".empty") %></p>
+  <% else %>
+    <%= render DS::Card.new(class: "divide-y divide-primary p-0") do %>
+      <% @rows.each do |row| %>
+        <div class="flex flex-wrap items-center justify-between gap-3 p-4" id="connection_<%= row[:id] %>">
+          <div class="min-w-0">
+            <p class="font-medium text-primary truncate"><%= row.dig(:institution, :name) || row[:name] %></p>
+            <p class="text-xs text-secondary"><%= row[:provider].humanize %></p>
+            <p class="text-xs text-secondary">
+              <%= row[:last_success_at] ? t(".last_success", time: time_ago_in_words(row[:last_success_at])) : t(".never_synced") %>
+            </p>
+            <% if row[:health] == :consent_expiring && row[:plaid_item]&.consent_expires_at %>
+              <p class="text-xs text-secondary"><%= t(".consent_ends", date: l(row[:plaid_item].consent_expires_at.to_date, format: :long)) %></p>
+            <% elsif row[:health] == :pending_disconnect && row[:plaid_item]&.pending_disconnect_at %>
+              <p class="text-xs text-secondary"><%= t(".disconnect_on", date: l(row[:plaid_item].pending_disconnect_at.to_date, format: :long)) %></p>
+            <% elsif row[:health] == :sync_error && row[:plaid_item]&.item_error_code %>
+              <p class="text-xs text-secondary"><%= row[:plaid_item].item_error_code %></p>
+            <% end %>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <%= render DS::Pill.new(
+              label: t("fork.connections.statuses.#{row[:health]}"),
+              tone: { healthy: :success, new_accounts: :info, consent_expiring: :warning, login_required: :warning, pending_disconnect: :warning, sync_error: :error, revoked: :error }.fetch(row[:health]),
+              marker: false
+            ) %>
+            <% if row[:plaid_item] %>
+              <%= render "fork/connections/actions", item: row[:plaid_item], status: row[:health] %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

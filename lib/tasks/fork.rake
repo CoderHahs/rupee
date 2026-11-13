@@ -8,4 +8,39 @@ namespace :fork do
     path.write(Fork::Branding.render(Rails.root.to_s, "Rupee"))
     puts "Wrote #{Fork::Branding.renamed_strings(Rails.root.to_s, 'Rupee').size} strings to #{Fork::Branding::OVERRIDES_PATH}"
   end
+
+  desc "Allocate card and loan payments to the open card bills (design 4.5)"
+  task liability_payment_match: :environment do
+    puts "Allocated #{Fork::Liabilities::PaymentMatcher.match_all} payments"
+  end
+end
+
+namespace :fork do
+  desc "Write a plaid_item_ledger_entries row for each existing Plaid Item that has none"
+  task plaid_ledger_backfill: :environment do
+    puts "Wrote #{Fork::PlaidItemBudget.backfill!} ledger rows"
+  end
+
+  desc "Poll Plaid for every Item's health now"
+  task plaid_health_poll: :environment do
+    result = Fork::PlaidHealthPoll.run
+    puts "Checked #{result[:checked]} Items, #{result[:failed]} failed"
+  end
+
+  desc "Backfill MCC, PFC and authorized_date onto existing Plaid transactions and print the fill-rate report"
+  task plaid_signals_backfill: :environment do
+    report = Fork::PlaidSignalsBackfill.new.run
+    # Items that were syncing are requeued rather than skipped.
+    PlaidItem.where(id: report.items_deferred).find_each do |item|
+      Fork::PlaidSignalsBackfillJob.set(wait: Fork::PlaidSignalsBackfillJob::RETRY_DELAY).perform_later(item)
+    end
+    puts report
+  end
+
+  desc "Fill security_prices.observed_on for rows that predate it. Dry run unless DRY_RUN=false"
+  task :backfill_price_observed_on, [ :dry_run ] => :environment do |_t, args|
+    dry_run = ActiveModel::Type::Boolean.new.cast(args[:dry_run] || ENV.fetch("DRY_RUN", "true"))
+    result = Fork::PriceObservedOnBackfill.run!(dry_run: dry_run)
+    puts({ dry_run: dry_run, **result.to_h }.to_json)
+  end
 end

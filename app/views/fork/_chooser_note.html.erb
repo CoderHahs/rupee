@@ -1,0 +1,8 @@
+<%# locals: (provider_configs:) %>
+<%# The Item budget and the brokerage-first note in the account-add chooser (design §4.2). %>
+<% if provider_configs.any? { |config| config[:key].to_s.start_with?("plaid") } %>
+  <div class="mt-3 px-2 space-y-1 text-xs text-secondary">
+    <p><%= t("fork.chooser_note.used", used: Fork::PlaidItemBudget.used, cap: Fork::PlaidItemBudget.cap) %></p>
+    <p><%= t("fork.chooser_note.reserved") %></p>
+  </div>
+<% end %>

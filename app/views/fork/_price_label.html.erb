@@ -1,0 +1,18 @@
+<%# A security's latest known price with its observation date (design §4.7).
+    locals: security %>
+<% quote = security.current_price_quote %>
+<% if quote.nil? %>
+  <span class="text-secondary"><%= t(".none") %></span>
+<% else %>
+  <% detail = t(".observed", date: l(quote.observed_on, format: :long), provider: quote.provider.to_s.humanize.presence || t(".unknown_provider")) %>
+  <%= render DS::Tooltip.new(text: detail, as: :span, placement: "top") do |tooltip| %>
+    <% tooltip.with_trigger do %>
+      <span class="inline-flex items-center gap-2">
+        <span><%= format_money(quote.money) %></span>
+        <% if quote.stale? %>
+          <span class="text-xs text-secondary"><%= t(".last_price", date: l(quote.observed_on, format: :long)) %></span>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+<% end %>

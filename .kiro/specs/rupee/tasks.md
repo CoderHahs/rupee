@@ -84,67 +84,67 @@
   - [x] 3.6 Add the AGPL footer with the running commit, and the README notices (design §7.7)
     - _Requirements: 22.4, 22.5_
 
-- [ ] 4. Plaid gem upgrade and transaction signals
+- [x] 4. Plaid gem upgrade and transaction signals
   - _Requirements: 6.4, 6.5_
-  - [ ] 4.1 Upgrade `plaid` from 41.0.0 to 51.x and send the pinned PFC version (D5, D6)
+  - [x] 4.1 Upgrade `plaid` from 41.0.0 to 51.x and send the pinned PFC version (D5, D6)
     - _Requirements: 6.4_
-  - [ ] 4.2 Persist MCC, PFC and `authorized_date` in `plaid_extra`, and add `CardBenefits::TransactionSignals` (design §4.4)
+  - [x] 4.2 Persist MCC, PFC and `authorized_date` in `plaid_extra`, and add `CardBenefits::TransactionSignals` (design §4.4)
     - _Requirements: 6.4_
-  - [ ] 4.3 Write `fork:plaid_signals_backfill` and its fill-rate report (answers open questions 3 and 7)
+  - [x] 4.3 Write `fork:plaid_signals_backfill` and its fill-rate report (answers open questions 3 and 7)
     - _Requirements: 6.5_
-  - [ ] 4.4 Test: per-account counts and sums unchanged by the backfill; no callbacks run
+  - [x] 4.4 Test: per-account counts and sums unchanged by the backfill; no callbacks run
     - _Requirements: 6.5_
 
-- [ ] 5. Item budget and connection health
+- [x] 5. Item budget and connection health
   - _Requirements: 2.5, 2.6, 2.7, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
-  - [ ] 5.1 Create `plaid_item_ledger_entries`, the backfill, and the guard in `Fork::PlaidItemBudget` (design §4.2)
+  - [x] 5.1 Create `plaid_item_ledger_entries`, the backfill, and the guard in `Fork::PlaidItemBudget` (design §4.2)
     - _Requirements: 2.5, 2.6_
-  - [ ] 5.2 Order the account-add chooser with brokerage connectors first (open question 16)
+  - [x] 5.2 Order the account-add chooser with brokerage connectors first (open question 16)
     - _Requirements: 2.7_
-  - [ ] 5.3 Add the `plaid_items` and `plaid_accounts` health columns, and `fork:plaid_health_poll` (design §4.3)
+  - [x] 5.3 Add the `plaid_items` and `plaid_accounts` health columns, and `fork:plaid_health_poll` (design §4.3)
     - _Requirements: 3.1, 3.2, 3.3_
-  - [ ] 5.4 Extend the webhook processor for `PENDING_DISCONNECT`, `NEW_ACCOUNTS_AVAILABLE`, `LOGIN_REPAIRED` and the revocations, and exclude revoked Items from `syncable`
+  - [x] 5.4 Extend the webhook processor for `PENDING_DISCONNECT`, `NEW_ACCOUNTS_AVAILABLE`, `LOGIN_REPAIRED` and the revocations, and exclude revoked Items from `syncable`
     - _Requirements: 3.4, 3.5, 3.6, 3.7_
-  - [ ] 5.5 Build the `/connections` page, its statuses and next actions, and the banners
+  - [x] 5.5 Build the `/connections` page, its statuses and next actions, and the banners
     - _Requirements: 3.8, 3.3_
-  - [ ] 5.6 Test: one test per webhook code, a bad signature, an unhandled code, and the guard at 9, 10 and 11 Items
+  - [x] 5.6 Test: one test per webhook code, a bad signature, an unhandled code, and the guard at 9, 10 and 11 Items
     - _Requirements: 2.5, 3.4, 3.5, 3.6, 3.7_
 
-- [ ] 6. Exchange rates
+- [x] 6. Exchange rates
   - _Requirements: 4.4, 4.5, 4.6, 4.8, 4.9, 4.10_
-  - [ ] 6.1 Add `Provider::BankOfCanada` and the router, and select it at deploy (D9)
+  - [x] 6.1 Add `Provider::BankOfCanada` and the router, and select it at deploy (D9)
     - _Requirements: 4.4_
-  - [ ] 6.2 Add `exchange_rates.source` and `observed_on`, the importer changes and the backfill (design §4.6)
+  - [x] 6.2 Add `exchange_rates.source` and `observed_on`, the importer changes and the backfill (design §4.6)
     - _Requirements: 4.5, 4.8_
-  - [ ] 6.3 Build `Fork::Fx.lookup`, the guards in `rates_for` and its callers, and the banners
+  - [x] 6.3 Build `Fork::Fx.lookup`, the guards in `rates_for` and its callers, and the banners
     - _Requirements: 4.5, 4.6_
-  - [ ] 6.4 Render `fork/fx_amount` wherever a converted amount is shown (open question 16)
+  - [x] 6.4 Render `fork/fx_amount` wherever a converted amount is shown (open question 16)
     - _Requirements: 4.8_
-  - [ ] 6.5 Write `transfer_fx_details` from the `Transfer` extension, and the net-worth breakdown by currency
+  - [x] 6.5 Write `transfer_fx_details` from the `Transfer` extension, and the net-worth breakdown by currency
     - _Requirements: 4.9, 4.10_
-  - [ ] 6.6 Test: the §6.1 and §6.2 examples, the missing-rate fixture across every page, and the nightly Valet check
+  - [x] 6.6 Test: the §6.1 and §6.2 examples, the missing-rate fixture across every page, and the nightly Valet check
     - _Requirements: 4.4, 4.5, 4.6, 4.9_
 
-- [ ] 7. Security prices
+- [x] 7. Security prices
   - _Requirements: 5.4, 5.5_
-  - [ ] 7.1 Map XTSX (TSX Venture) to `.TRV` and `V` with CAD, and assign TSX and TSXV listings to the chosen provider (D20)
+  - [x] 7.1 Map XTSX (TSX Venture) to `.TRV` and `V` with CAD, and assign TSX and TSXV listings to the chosen provider (D20)
     - _Requirements: 5.4_
-  - [ ] 7.2 Add `security_prices.observed_on`, the backfill, and the carried-price label (D21)
+  - [x] 7.2 Add `security_prices.observed_on`, the backfill, and the carried-price label (D21)
     - _Requirements: 5.5_
-  - [ ] 7.3 Add `Fork::HealthCheckPolicy` and `Fork::DetailsThrottle` (design §4.7)
+  - [x] 7.3 Add `Fork::HealthCheckPolicy` and `Fork::DetailsThrottle` (design §4.7)
     - _Requirements: 5.5_
-  - [ ] 7.4 Test: no null `observed_on` after the backfill, and a failed health check keeps prices
+  - [x] 7.4 Test: no null `observed_on` after the backfill, and a failed health check keeps prices
     - _Requirements: 5.5_
 
 - [ ] 8. Liabilities and card statement bills
   - _Requirements: 1.1, 1.4, 2.1, 2.3, 2.4, 3.7, 4.1, 4.2, 4.3, 4.7, 5.1, 5.2, 5.3, 5.6, 6.1, 6.2, 6.3, 7.1, 7.2, 7.4, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 10.1, 11.1, 13.1, 13.2, 14.1, 21.2, 21.4, 22.3, 23.1_
-  - [ ] 8.1 Move the three Liabilities processors to `enrich_attributes`, and select `purchase_apr` (finding 3)
+  - [x] 8.1 Move the three Liabilities processors to `enrich_attributes`, and select `purchase_apr` (finding 3)
     - _Requirements: 9.1, 9.2, 9.7_
-  - [ ] 8.2 Create `liability_statements` and `Fork::Liabilities::Recorder`, with manual entry
+  - [x] 8.2 Create `liability_statements` and `Fork::Liabilities::Recorder`, with manual entry
     - _Requirements: 9.1, 9.5, 9.6_
-  - [ ] 8.3 Build BillLinker, the `RecurringOccurrence` prepend and `fork:liability_payment_match` (design §4.5)
+  - [x] 8.3 Build BillLinker, the `RecurringOccurrence` prepend and `fork:liability_payment_match` (design §4.5)
     - _Requirements: 9.3, 9.4_
-  - [ ] 8.4 Test: the §6.8 states, a moved due date, a zero balance, and a payment counted once
+  - [x] 8.4 Test: the §6.8 states, a moved due date, a zero balance, and a payment counted once
     - _Requirements: 9.3, 9.4_
   - [ ] 8.5 Link the household's real accounts once the restore drill (3.5) has passed
     - _Requirements: 2.1, 21.4_
