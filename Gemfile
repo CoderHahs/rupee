@@ -81,7 +81,7 @@ gem "csv"
 gem "rchardet" # Character encoding detection
 gem "redcarpet"
 gem "stripe"
-gem "plaid"
+gem "plaid", "~> 51.0"
 gem "httparty"
 gem "rotp", "~> 6.3"
 gem "rqrcode", "~> 3.0"
