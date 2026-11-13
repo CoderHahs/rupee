@@ -34,7 +34,7 @@ Rails.application.config.to_prepare do
   # The Item budget and connection health (design §4.2, §4.3).
   PlaidItem.include(Fork::PlaidItemExtension)
   PlaidItem::WebhookProcessor.prepend(Fork::PlaidWebhookExtension)
-  PlaidAccount::Processor.prepend(Fork::PlaidAccountProcessorGate)
+  PlaidAccount::Processor.prepend(Fork::RevokedAccountGate)
   PlaidItemsController.prepend(Fork::PlaidItemsGate)
   Provider::Factory.singleton_class.prepend(Fork::ConnectionChooserOrder)
 
