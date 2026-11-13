@@ -84,15 +84,15 @@
   - [x] 3.6 Add the AGPL footer with the running commit, and the README notices (design §7.7)
     - _Requirements: 22.4, 22.5_
 
-- [ ] 4. Plaid gem upgrade and transaction signals
+- [x] 4. Plaid gem upgrade and transaction signals
   - _Requirements: 6.4, 6.5_
-  - [ ] 4.1 Upgrade `plaid` from 41.0.0 to 51.x and send the pinned PFC version (D5, D6)
+  - [x] 4.1 Upgrade `plaid` from 41.0.0 to 51.x and send the pinned PFC version (D5, D6)
     - _Requirements: 6.4_
-  - [ ] 4.2 Persist MCC, PFC and `authorized_date` in `plaid_extra`, and add `CardBenefits::TransactionSignals` (design §4.4)
+  - [x] 4.2 Persist MCC, PFC and `authorized_date` in `plaid_extra`, and add `CardBenefits::TransactionSignals` (design §4.4)
     - _Requirements: 6.4_
-  - [ ] 4.3 Write `fork:plaid_signals_backfill` and its fill-rate report (answers open questions 3 and 7)
+  - [x] 4.3 Write `fork:plaid_signals_backfill` and its fill-rate report (answers open questions 3 and 7)
     - _Requirements: 6.5_
-  - [ ] 4.4 Test: per-account counts and sums unchanged by the backfill; no callbacks run
+  - [x] 4.4 Test: per-account counts and sums unchanged by the backfill; no callbacks run
     - _Requirements: 6.5_
 
 - [x] 5. Item budget and connection health

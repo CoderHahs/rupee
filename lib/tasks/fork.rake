@@ -26,4 +26,14 @@ namespace :fork do
     result = Fork::PlaidHealthPoll.run
     puts "Checked #{result[:checked]} Items, #{result[:failed]} failed"
   end
+
+  desc "Backfill MCC, PFC and authorized_date onto existing Plaid transactions and print the fill-rate report"
+  task plaid_signals_backfill: :environment do
+    report = Fork::PlaidSignalsBackfill.new.run
+    # Items that were syncing are requeued rather than skipped.
+    PlaidItem.where(id: report.items_deferred).find_each do |item|
+      Fork::PlaidSignalsBackfillJob.set(wait: Fork::PlaidSignalsBackfillJob::RETRY_DELAY).perform_later(item)
+    end
+    puts report
+  end
 end

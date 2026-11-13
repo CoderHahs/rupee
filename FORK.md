@@ -16,7 +16,9 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------ |
 | `app/models/assistant/configurable.rb`                     | Both system prompts use `config.x.product_name` instead of "Sure" (R13.5)    | Yes                |
 | `app/models/assistant/function/get_account_statement.rb`   | Tool description says "the app" instead of "Sure"                            | Yes                |
-| `app/models/provider/plaid.rb`                             | Plaid Link's `client_name` is the product name instead of "Sure Finances"    | Yes                |
+| `app/models/provider/plaid.rb`                             | Plaid Link's `client_name` is the product name instead of "Sure Finances"; transaction sync sends the pinned PFC version (D6) | Yes                |
+| `Gemfile`, `Gemfile.lock`                                  | `plaid` pinned to `~> 51.0` (was 41.0.0) for MCC and the PFC version option (R6.4) | Yes |
+| `app/models/plaid_entry/processor.rb`                      | `plaid_extra` adds MCC, PFC and `authorized_date` via `Fork::PlaidSignals` (R6.4) | Yes |
 | `app/models/user.rb`                                       | The authenticator-app issuer is the product name instead of "Sure Finances"  | Yes                |
 | `app/controllers/concerns/webauthn_relying_party.rb`       | The passkey prompt shows the product name instead of "Sure"                  | Yes                |
 | `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
@@ -69,6 +71,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/models/fork/liability_statement.rb`, `app/models/fork/liabilities/`, `app/models/concerns/fork/liability_processing.rb`, `recurring_occurrence_extension.rb`, `account_extension.rb`, `app/jobs/fork/liability_payment_match_job.rb`, `app/controllers/fork/liability_statements_controller.rb`, `app/views/fork/liability_statements/` | Liability statements, the Recorder, BillLinker and PaymentMatcher, and the `PlaidAccount::Processor` and `RecurringOccurrence` prepends (design §4.5) |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
+| `app/models/fork/plaid_signals.rb`, `plaid_signals_backfill.rb`, `app/jobs/fork/plaid_signals_backfill_job.rb`, `app/models/card_benefits/transaction_signals.rb` | Plaid signal keys, the one-off backfill with its fill-rate report, and the reader card benefits use (design §4.4) |
 | `FORK.md`                     | This file                                                                                   |
 | `.kiro/specs/rupee/`          | Design, requirements and tasks                                                              |
 
