@@ -12,3 +12,7 @@ resources :connections, only: :index, controller: "fork/connections" do
     post :keep
   end
 end
+
+resources :accounts, only: [] do
+  resources :liability_statements, only: %i[index new create edit update destroy], controller: "fork/liability_statements"
+end

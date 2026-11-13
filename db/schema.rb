@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_050100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_080000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1577,6 +1577,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_050100) do
     t.index ["status"], name: "index_kraken_items_on_status"
   end
 
+  create_table "liability_statements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.jsonb "aprs", default: [], null: false
+    t.datetime "created_at", null: false
+    t.string "currency", null: false
+    t.date "due_on"
+    t.text "fields_missing", default: [], null: false, array: true
+    t.boolean "is_overdue", default: false, null: false
+    t.date "issued_on"
+    t.decimal "last_payment_amount", precision: 19, scale: 4
+    t.date "last_payment_on"
+    t.decimal "minimum_due", precision: 19, scale: 4
+    t.uuid "recurring_occurrence_id"
+    t.string "source", default: "plaid", null: false
+    t.decimal "statement_balance", precision: 19, scale: 4
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "due_on"], name: "idx_liability_statements_account_due_on", unique: true, where: "(issued_on IS NULL)"
+    t.index ["account_id", "issued_on"], name: "idx_liability_statements_account_issued_on", unique: true, where: "(issued_on IS NOT NULL)"
+    t.index ["account_id"], name: "index_liability_statements_on_account_id"
+    t.index ["recurring_occurrence_id"], name: "index_liability_statements_on_recurring_occurrence_id"
+    t.check_constraint "issued_on IS NOT NULL OR due_on IS NOT NULL", name: "chk_liability_statements_dated"
+    t.check_constraint "source::text = ANY (ARRAY['plaid'::character varying, 'manual'::character varying]::text[])", name: "chk_liability_statements_source"
+  end
+
   create_table "llm_usages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "cache_creation_tokens"
     t.integer "cache_read_tokens"
@@ -1614,7 +1638,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_050100) do
     t.jsonb "variable_rate_schedule", default: {}, null: false
     t.check_constraint "down_payment IS NULL OR down_payment >= 0::numeric", name: "chk_loans_down_payment_non_negative"
     t.check_constraint "insurance_rate IS NULL OR insurance_rate >= 0::numeric", name: "chk_loans_insurance_rate_non_negative"
-    t.check_constraint "insurance_rate_type IS NULL OR (insurance_rate_type::text = ANY (ARRAY['level_term'::character varying, 'decreasing_life'::character varying]::text[]))", name: "chk_loans_insurance_rate_type"
+    t.check_constraint "insurance_rate_type IS NULL OR (insurance_rate_type::text = ANY (ARRAY['level_term'::character varying::text, 'decreasing_life'::character varying::text]))", name: "chk_loans_insurance_rate_type"
   end
 
   create_table "lunchflow_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3077,6 +3101,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_050100) do
   add_foreign_key "invitations", "users", column: "inviter_id"
   add_foreign_key "kraken_accounts", "kraken_items"
   add_foreign_key "kraken_items", "families"
+  add_foreign_key "liability_statements", "accounts", on_delete: :cascade
+  add_foreign_key "liability_statements", "recurring_occurrences", on_delete: :nullify
   add_foreign_key "llm_usages", "families"
   add_foreign_key "lunchflow_accounts", "lunchflow_items"
   add_foreign_key "lunchflow_items", "families"

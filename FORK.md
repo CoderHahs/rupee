@@ -32,6 +32,8 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `public/offline.html`                                      | Page title "Offline - Rupee" (static file, so the name is literal)           | No                 |
 | `mobile/` display names, l10n and README                   | App name "Rupee" on Android and iOS; English and Swedish strings             | No                 |
 | Tests asserting English copy (10 files)                    | Expected strings say Rupee, and the VCR cassette's `client_name` is "Rupee"  | No                 |
+| `app/models/plaid_account/liabilities/{credit,mortgage,student_loan}_processor.rb` | Write through `enrich_attributes`, which honours locks; the credit processor takes `purchase_apr` (finding 3, R9.2) | Yes |
+| `test/models/plaid_account/liabilities/credit_processor_test.rb` | Payload carries `apr_type`; new purchase APR and lock cases                  | No                 |
 | `test/models/family/auto_categorize_transactions_test.rb`  | Its new family turns the household AI switch on                              | No                 |
 
 ### Files the fork adds
@@ -64,6 +66,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/controllers/fork/connections_controller.rb`, `app/views/fork/connections/` | `/connections` and the next-action buttons used by the banners |
 | `deploy/`                     | The production stack: compose file, Caddy allowlist, env template, restic backups and the runbook (design §3.1, §7) |
 | `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
+| `app/models/fork/liability_statement.rb`, `app/models/fork/liabilities/`, `app/models/concerns/fork/liability_processing.rb`, `recurring_occurrence_extension.rb`, `account_extension.rb`, `app/jobs/fork/liability_payment_match_job.rb`, `app/controllers/fork/liability_statements_controller.rb`, `app/views/fork/liability_statements/` | Liability statements, the Recorder, BillLinker and PaymentMatcher, and the `PlaidAccount::Processor` and `RecurringOccurrence` prepends (design §4.5) |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |
 | `test/lib/fork/`, `test/models/fork/`, `test/controllers/fork/` | Tests for the above                                       |
 | `FORK.md`                     | This file                                                                                   |

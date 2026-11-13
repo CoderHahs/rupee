@@ -12,3 +12,9 @@ fork:plaid_health_poll:
   class: "Fork::PlaidHealthPollJob"
   queue: "scheduled"
   description: "Poll Plaid for each Item's error, consent expiry and update type"
+
+fork:liability_payment_match:
+  cron: "5 * * * *"
+  class: "Fork::LiabilityPaymentMatchJob"
+  queue: "scheduled"
+  description: "Allocates card and loan payments to open card bills"

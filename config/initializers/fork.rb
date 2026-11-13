@@ -29,6 +29,7 @@ end
 # after each code reload in development.
 Rails.application.config.to_prepare do
   Family.include(Fork::FamilyExtension)
+  Account.include(Fork::AccountExtension)
 
   # The Item budget and connection health (design §4.2, §4.3).
   PlaidItem.include(Fork::PlaidItemExtension)
@@ -42,6 +43,10 @@ Rails.application.config.to_prepare do
   User.prepend(Fork::UserAiGate)
   McpController.prepend(Fork::McpAiGate)
   ImportsController.prepend(Fork::ImportsAiGate)
+
+  # Liabilities and card bills (design §4.5).
+  PlaidAccount::Processor.prepend(Fork::LiabilityProcessing)
+  RecurringOccurrence.prepend(Fork::RecurringOccurrenceExtension)
 end
 
 # Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.

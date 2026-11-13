@@ -138,13 +138,13 @@
 
 - [ ] 8. Liabilities and card statement bills
   - _Requirements: 1.1, 1.4, 2.1, 2.3, 2.4, 3.7, 4.1, 4.2, 4.3, 4.7, 5.1, 5.2, 5.3, 5.6, 6.1, 6.2, 6.3, 7.1, 7.2, 7.4, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 10.1, 11.1, 13.1, 13.2, 14.1, 21.2, 21.4, 22.3, 23.1_
-  - [ ] 8.1 Move the three Liabilities processors to `enrich_attributes`, and select `purchase_apr` (finding 3)
+  - [x] 8.1 Move the three Liabilities processors to `enrich_attributes`, and select `purchase_apr` (finding 3)
     - _Requirements: 9.1, 9.2, 9.7_
-  - [ ] 8.2 Create `liability_statements` and `Fork::Liabilities::Recorder`, with manual entry
+  - [x] 8.2 Create `liability_statements` and `Fork::Liabilities::Recorder`, with manual entry
     - _Requirements: 9.1, 9.5, 9.6_
-  - [ ] 8.3 Build BillLinker, the `RecurringOccurrence` prepend and `fork:liability_payment_match` (design §4.5)
+  - [x] 8.3 Build BillLinker, the `RecurringOccurrence` prepend and `fork:liability_payment_match` (design §4.5)
     - _Requirements: 9.3, 9.4_
-  - [ ] 8.4 Test: the §6.8 states, a moved due date, a zero balance, and a payment counted once
+  - [x] 8.4 Test: the §6.8 states, a moved due date, a zero balance, and a payment counted once
     - _Requirements: 9.3, 9.4_
   - [ ] 8.5 Link the household's real accounts once the restore drill (3.5) has passed
     - _Requirements: 2.1, 21.4_
