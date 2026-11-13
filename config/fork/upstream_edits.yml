@@ -16,6 +16,9 @@ upstream_edits:
   - app/models/family/auto_merchant_detector.rb
   - app/models/insight/body_writer.rb
   - app/models/pdf_import.rb
+  - app/models/plaid_account/liabilities/credit_processor.rb
+  - app/models/plaid_account/liabilities/mortgage_processor.rb
+  - app/models/plaid_account/liabilities/student_loan_processor.rb
   - app/models/provider/plaid.rb
   - app/models/provider_merchant/enhancer.rb
   - app/models/recurring_transaction/ai_setup_suggester.rb
@@ -50,6 +53,7 @@ upstream_edits:
   - test/controllers/subscriptions_controller_test.rb
   - test/jobs/deliver_insight_notification_job_test.rb
   - test/models/family/auto_categorize_transactions_test.rb
+  - test/models/plaid_account/liabilities/credit_processor_test.rb
   - test/models/push_notification_test_test.rb
   - test/models/user_test.rb
   - test/system/admin/system_health_test.rb

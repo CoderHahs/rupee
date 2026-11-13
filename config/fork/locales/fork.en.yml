@@ -93,3 +93,55 @@ en:
         turned_on: Rupee is on.
       destroy:
         turned_off: Rupee is off.
+    liabilities:
+      bill_name: "%{name} payment"
+    liability_statements:
+      index:
+        page_title: "Statements for %{account}"
+        title: "Statements: %{account}"
+        add: Add a statement
+        empty_title: No statements yet
+        empty_description: Statements from your bank appear here after a sync. You can also add one by hand.
+        issued: "Issued %{date}"
+        due_only: "Due %{date}"
+        source_plaid: From your bank
+        source_manual: Entered by hand
+        overdue: Overdue
+        minimum_paid: Minimum paid, balance carried
+        edit: Edit
+        delete: Delete
+        delete_confirm: Delete this statement?
+        not_provided: Not provided by the institution
+        fields:
+          due_on: Due date
+          statement_balance: Statement balance
+          minimum_due: Minimum due
+          last_payment_amount: Last payment
+          last_payment_on: Last payment date
+          aprs: APRs
+        pending:
+          needs_funding_account: Choose the account this bill is paid from by editing the statement.
+          needs_currency: This card's bill is in another currency. Change the bill's currency to match the card.
+      new:
+        page_title: Add a statement
+      edit:
+        page_title: Edit statement
+      form:
+        invalid: The statement could not be saved.
+        issued_on: Issue date
+        due_on: Due date
+        statement_balance: Statement balance
+        minimum_due: Minimum due
+        last_payment_amount: Last payment amount
+        last_payment_on: Last payment date
+        is_overdue: Past due
+        funding_account: Paid from
+        funding_account_default: Use the bill's account
+        cancel: Cancel
+        save: Save statement
+      create:
+        created: Statement added.
+      update:
+        updated: Statement updated.
+      destroy:
+        destroyed: Statement deleted.

@@ -17,7 +17,7 @@ class PlaidAccount::Liabilities::CreditProcessorTest < ActiveSupport::TestCase
     @plaid_account.update!(raw_liabilities_payload: {
       credit: {
         minimum_payment_amount: 100,
-        aprs: [ { apr_percentage: 15.0 } ]
+        aprs: [ { apr_type: "purchase_apr", apr_percentage: 15.0 } ]
       }
     })
 
@@ -35,5 +35,45 @@ class PlaidAccount::Liabilities::CreditProcessorTest < ActiveSupport::TestCase
 
     assert_nil @plaid_account.current_account.credit_card.minimum_payment
     assert_nil @plaid_account.current_account.credit_card.apr
+  end
+
+  test "the headline APR is the purchase APR, not the first entry" do
+    @plaid_account.update!(raw_liabilities_payload: {
+      credit: {
+        minimum_payment_amount: 100,
+        aprs: [
+          { apr_type: "balance_transfer_apr", apr_percentage: 0.0 },
+          { apr_type: "purchase_apr", apr_percentage: 21.5 }
+        ]
+      }
+    })
+
+    PlaidAccount::Liabilities::CreditProcessor.new(@plaid_account).process
+
+    assert_equal 21.5, @plaid_account.current_account.credit_card.apr
+  end
+
+  test "the APR is cleared when no purchase APR exists" do
+    @plaid_account.current_account.credit_card.update!(apr: 18.0)
+    @plaid_account.update!(raw_liabilities_payload: {
+      credit: { minimum_payment_amount: 100, aprs: [ { apr_type: "cash_apr", apr_percentage: 25.0 } ] }
+    })
+
+    PlaidAccount::Liabilities::CreditProcessor.new(@plaid_account).process
+
+    assert_nil @plaid_account.current_account.credit_card.apr
+  end
+
+  test "a locked APR is not overwritten" do
+    card = @plaid_account.current_account.credit_card
+    card.update!(apr: 9.9)
+    card.lock_attr!(:apr)
+    @plaid_account.update!(raw_liabilities_payload: {
+      credit: { aprs: [ { apr_type: "purchase_apr", apr_percentage: 30.0 } ] }
+    })
+
+    PlaidAccount::Liabilities::CreditProcessor.new(@plaid_account).process
+
+    assert_equal 9.9, card.reload.apr
   end
 end

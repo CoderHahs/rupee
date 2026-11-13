@@ -1,0 +1,25 @@
+<%# locals: (statement:, account:) %>
+
+<%= styled_form_with model: statement, scope: :fork_liability_statement,
+      url: (statement.persisted? ? account_liability_statement_path(account, statement) : account_liability_statements_path(account)),
+      method: (statement.persisted? ? :patch : :post), class: "space-y-4" do |form| %>
+  <% if statement.errors.any? %>
+    <%= render DS::Alert.new(variant: :error, message: statement.errors.full_messages.to_sentence) %>
+  <% end %>
+
+  <%= form.date_field :issued_on, label: t(".issued_on") %>
+  <%= form.date_field :due_on, label: t(".due_on"), required: true %>
+  <%= form.number_field :statement_balance, label: t(".statement_balance"), step: "0.01", min: 0 %>
+  <%= form.number_field :minimum_due, label: t(".minimum_due"), step: "0.01", min: 0 %>
+  <%= form.number_field :last_payment_amount, label: t(".last_payment_amount"), step: "0.01", min: 0 %>
+  <%= form.date_field :last_payment_on, label: t(".last_payment_on") %>
+  <%= form.check_box :is_overdue, label: t(".is_overdue") %>
+  <%= form.select :funding_account_id,
+        accessible_accounts.where.not(id: account.id).select { |a| a.depository? }.map { |a| [ a.name, a.id ] },
+        { label: t(".funding_account"), include_blank: t(".funding_account_default"), selected: nil } %>
+
+  <div class="flex items-center justify-end gap-2">
+    <%= render DS::Link.new(text: t(".cancel"), href: account_liability_statements_path(account), variant: :secondary) %>
+    <%= render DS::Button.new(text: t(".save"), variant: :primary, type: :submit) %>
+  </div>
+<% end %>

@@ -29,12 +29,17 @@ end
 # after each code reload in development.
 Rails.application.config.to_prepare do
   Family.include(Fork::FamilyExtension)
+  Account.include(Fork::AccountExtension)
 
   # The household AI switch (design §4.10).
   Family.prepend(Fork::FamilyAiGate)
   User.prepend(Fork::UserAiGate)
   McpController.prepend(Fork::McpAiGate)
   ImportsController.prepend(Fork::ImportsAiGate)
+
+  # Liabilities and card bills (design §4.5).
+  PlaidAccount::Processor.prepend(Fork::LiabilityProcessing)
+  RecurringOccurrence.prepend(Fork::RecurringOccurrenceExtension)
 end
 
 # Load the fork's cron jobs when a Sidekiq server boots. See Fork::Schedule.

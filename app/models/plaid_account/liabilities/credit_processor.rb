@@ -6,10 +6,13 @@ class PlaidAccount::Liabilities::CreditProcessor
   def process
     return unless credit_data.present?
 
-    import_adapter.update_accountable_attributes(
-      attributes: {
+    # enrich_attributes honours attribute locks and can clear a value. The
+    # headline APR is the purchase APR; Plaid does not order aprs, so the first
+    # entry may be a balance transfer rate (R9.2).
+    account.accountable.enrich_attributes(
+      {
         minimum_payment: credit_data.dig("minimum_payment_amount"),
-        apr: credit_data.dig("aprs", 0, "apr_percentage")
+        apr: purchase_apr
       },
       source: "plaid"
     )
@@ -18,8 +21,9 @@ class PlaidAccount::Liabilities::CreditProcessor
   private
     attr_reader :plaid_account
 
-    def import_adapter
-      @import_adapter ||= Account::ProviderImportAdapter.new(account)
+    def purchase_apr
+      aprs = Array(credit_data["aprs"])
+      aprs.find { |apr| apr["apr_type"] == "purchase_apr" }&.dig("apr_percentage")
     end
 
     def account

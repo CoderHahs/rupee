@@ -7,4 +7,9 @@
 #   class: "Fork::ExampleJob"
 #   queue: "scheduled"
 #   description: "What the job does"
-{}
+
+fork:liability_payment_match:
+  cron: "5 * * * *"
+  class: "Fork::LiabilityPaymentMatchJob"
+  queue: "scheduled"
+  description: "Allocates card and loan payments to open card bills"
