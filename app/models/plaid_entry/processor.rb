@@ -105,7 +105,7 @@ class PlaidEntry::Processor
         "transaction_code" => plaid_transaction["transaction_code"].presence,
         "payment_meta" => compact_provider_hash(plaid_transaction["payment_meta"]),
         "counterparties" => compact_counterparties(plaid_transaction["counterparties"])
-      }.compact
+      }.merge(Fork::PlaidSignals.extract(plaid_transaction)).compact
 
       { "plaid" => plaid }
     end

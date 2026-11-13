@@ -101,7 +101,8 @@ class Provider::Plaid
         access_token: access_token,
         cursor: cursor,
         options: {
-          include_original_description: true
+          include_original_description: true,
+          personal_finance_category_version: Fork::PlaidSignals.pfc_version
         }
       )
 

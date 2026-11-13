@@ -5,6 +5,8 @@
 base: 0da863b78971629705d0a5ec5db8998dc97c974c
 
 upstream_edits:
+  - Gemfile
+  - Gemfile.lock
   - README.md
   - app/controllers/concerns/webauthn_relying_party.rb
   - app/controllers/family_merchants_controller.rb
@@ -16,6 +18,7 @@ upstream_edits:
   - app/models/family/auto_merchant_detector.rb
   - app/models/insight/body_writer.rb
   - app/models/pdf_import.rb
+  - app/models/plaid_entry/processor.rb
   - app/models/provider/plaid.rb
   - app/models/provider_merchant/enhancer.rb
   - app/models/recurring_transaction/ai_setup_suggester.rb
