@@ -9,3 +9,16 @@ namespace :fork do
     puts "Wrote #{Fork::Branding.renamed_strings(Rails.root.to_s, 'Rupee').size} strings to #{Fork::Branding::OVERRIDES_PATH}"
   end
 end
+
+namespace :fork do
+  desc "Write a plaid_item_ledger_entries row for each existing Plaid Item that has none"
+  task plaid_ledger_backfill: :environment do
+    puts "Wrote #{Fork::PlaidItemBudget.backfill!} ledger rows"
+  end
+
+  desc "Poll Plaid for every Item's health now"
+  task plaid_health_poll: :environment do
+    result = Fork::PlaidHealthPoll.run
+    puts "Checked #{result[:checked]} Items, #{result[:failed]} failed"
+  end
+end

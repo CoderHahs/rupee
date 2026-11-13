@@ -22,6 +22,7 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `app/views/impersonation_sessions/_approval_bar.html.erb`  | Support banners use the product name                                         | Yes                |
 | `app/views/layouts/doorkeeper/application.html.erb`        | The OAuth consent heading uses the product name                              | Yes                |
 | `config/routes.rb`                                         | `draw :fork` loads `config/routes/fork.rb` (R22.2)                           | No                 |
+| `app/views/accounts/new/_method_selector.html.erb`        | Renders `fork/chooser_note`: the Item budget and the brokerage-first sentence (R2.7) | No |
 | `app/views/layouts/application.html.erb`                   | Renders `fork/banners` under the system alerts (R18.10)                      | No                 |
 | `app/views/settings/_settings_nav.html.erb`, `app/helpers/settings_helper.rb` | Settings > Household link for admins (R18.10)            | No                 |
 | The 10 LLM call sites in `bills_helper.rb`, `family_merchants_controller.rb`, `provider_merchant/enhancer.rb`, `pdf_import.rb` (2), `assistant/function/import_bank_statement.rb`, `insight/body_writer.rb`, `recurring_transaction/ai_setup_suggester.rb`, `family/auto_merchant_detector.rb`, `rule/registry/transaction_resource.rb` | Ask `Family#permitted_llm_provider` instead of the registry, so the household AI switch covers them (R13.3) | Yes |
@@ -56,6 +57,11 @@ Fork code lives in files upstream does not have. An upstream file is edited only
 | `.github/workflows/fork-secrets.yml` | gitleaks over the whole history on every push and pull request (R22.7)               |
 | `.gitleaksignore`             | Reviewed false positives from upstream's history                                            |
 | `app/models/concerns/fork/family_ai_gate.rb`, `user_ai_gate.rb`, `app/controllers/concerns/fork/mcp_ai_gate.rb`, `imports_ai_gate.rb` | The household AI switch, prepended to `Family`, `User`, `McpController` and `ImportsController` in `fork.rb` (R13.3) |
+| `app/models/fork/plaid_item_budget.rb`, `plaid_item_ledger_entry.rb`, `concerns/fork/plaid_item_extension.rb` | The Item ledger and cap guard; `syncable` excludes revoked Items (design §4.2, R2.5) |
+| `app/controllers/concerns/fork/plaid_items_gate.rb`, `app/views/fork/plaid_item_budgets/` | Guards `PlaidItemsController#new`, never `edit` (R2.6) |
+| `app/models/concerns/fork/plaid_webhook_extension.rb`, `plaid_account_processor_gate.rb`, `app/models/fork/connection_health.rb`, `connection_events.rb`, `plaid_health_poll.rb`, `app/jobs/fork/plaid_health_poll_job.rb` | Connection health webhooks, statuses and the poller (design §4.3). Events are `ActiveSupport::Notifications` until task 17 |
+| `app/models/concerns/fork/connection_chooser_order.rb` | Brokerage connectors first in the account-add chooser (R2.7) |
+| `app/controllers/fork/connections_controller.rb`, `app/views/fork/connections/` | `/connections` and the next-action buttons used by the banners |
 | `deploy/`                     | The production stack: compose file, Caddy allowlist, env template, restic backups and the runbook (design §3.1, §7) |
 | `app/helpers/fork/source_helper.rb`, `app/views/fork/_source_notice.html.erb` | The source link for the running commit; `FORK_SOURCE_URL` overrides the repository |
 | `test/fixtures/household_settings.yml` | Fixture households with AI on, as upstream's tests assume                          |

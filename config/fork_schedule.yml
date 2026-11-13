@@ -7,4 +7,8 @@
 #   class: "Fork::ExampleJob"
 #   queue: "scheduled"
 #   description: "What the job does"
-{}
+fork:plaid_health_poll:
+  cron: "10 */6 * * *"
+  class: "Fork::PlaidHealthPollJob"
+  queue: "scheduled"
+  description: "Poll Plaid for each Item's error, consent expiry and update type"

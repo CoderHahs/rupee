@@ -30,6 +30,13 @@ end
 Rails.application.config.to_prepare do
   Family.include(Fork::FamilyExtension)
 
+  # The Item budget and connection health (design §4.2, §4.3).
+  PlaidItem.include(Fork::PlaidItemExtension)
+  PlaidItem::WebhookProcessor.prepend(Fork::PlaidWebhookExtension)
+  PlaidAccount::Processor.prepend(Fork::PlaidAccountProcessorGate)
+  PlaidItemsController.prepend(Fork::PlaidItemsGate)
+  Provider::Factory.singleton_class.prepend(Fork::ConnectionChooserOrder)
+
   # The household AI switch (design §4.10).
   Family.prepend(Fork::FamilyAiGate)
   User.prepend(Fork::UserAiGate)

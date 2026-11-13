@@ -1,0 +1,18 @@
+<%# locals: (item:, status:) %>
+<%# The next action for a Plaid connection's status (design §4.3). %>
+<% if item.manageable_by?(Current.user) %>
+  <% case status %>
+  <% when :revoked %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.keep"), href: keep_connection_path(item), method: :post, variant: :secondary, size: :sm) %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.delete"), href: plaid_item_path(item), method: :delete, variant: :outline_destructive, size: :sm,
+                            confirm: CustomConfirm.for_resource_deletion(item.name, high_severity: true)) %>
+  <% when :pending_disconnect, :login_required %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.reconnect"), href: edit_plaid_item_path(item), variant: :secondary, size: :sm, frame: :modal) %>
+  <% when :consent_expiring %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.renew"), href: edit_plaid_item_path(item), variant: :secondary, size: :sm, frame: :modal) %>
+  <% when :new_accounts %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.add_accounts"), href: edit_plaid_item_path(item, add_accounts: true), variant: :secondary, size: :sm, frame: :modal) %>
+  <% when :sync_error %>
+    <%= render DS::Link.new(text: t("fork.connections.actions.retry"), href: sync_plaid_item_path(item), method: :post, variant: :secondary, size: :sm) %>
+  <% end %>
+<% end %>
